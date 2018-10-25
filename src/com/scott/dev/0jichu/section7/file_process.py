@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 '''
+文件操作
 Created on 2018年10月13日
 
 @author: root
@@ -8,7 +9,6 @@ Created on 2018年10月13日
 # 1、创建并打开文件,使用file函数返回一个file对象
 # 2、调用file对象的read、write等方法处理文件
 # 3、调用close关闭文件，释放file对象占用的资源
-from __builtin__ import file
 
 # 文件模式:
 # r: 以只读方式打开文件
@@ -70,6 +70,28 @@ from __builtin__ import file
 # splitext(p): 从路径中分割文件的扩展名
 # splitdrive(p): 从路径中分割驱动器的名称
 # walk(top,func,arg): 遍历目录树，于os.walk()的功能相同
+
+###
+
+'''
+from: https://segmentfault.com/q/1010000000397712
+file文件的读写，一定要注意，在写完之后，必须要seek(0)，把文件指针重新指向文件开头，
+然后再读，否则就会从缓冲区读取一大堆乱码——顺便，这是不是一个潜在的缓冲区溢出漏洞啊
+'''
+'''
+解决这个问题，你需要在读文件之前，用file对象的flush()方法，将已修改的文件内容可靠写盘：
+
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+f = open(r"C:\Users\776\test.txt","w+") 
+# 注：w+ truncates the file - 因此文件无论存在与否，结果一致
+f.write('hello') # 此时指针=5，内存内容=`hello[EOF]`
+f.flush() # 此时硬盘内容=`hello[EOF]`
+print(f.read()) # 此时指针=5，正好在[EOF]上，正确输出''
+f.seek(0) # 指针归0
+print(f.read()) # 正确从头读出全部内容'hello'
+f.close()
+'''
 
 FILE_NAME = 'hello.dat'
 
@@ -140,10 +162,122 @@ def test_read_param():
 # 文件写入:
 # writelines()写文件
 def test_file_write():
-    f = open(FILE_NAME, 'w+')
+    print '\ntest_file_write - writelines写入文件\n'
+    f = open('file_write.dat', 'w+')
     li = ['corporations', 'facebook', 'linkedin', 'amazon', 'google', 'apple']
     f.writelines(li)
+    f.seek(0)
+    for s in f.readlines():
+        print '写入的是:\t',s
     f.close()
+
+
+# 文件重命名
+def test_file_rename():
+    print '\ntest_file_rename 重命名函数开始\n'
+    import os
+    list = os.listdir('.')
+    print 'list items:', list
+    RENAME_FILE_NAME = 'rename_' + FILE_NAME
+    RENAME_FILE_PATH = os.path.abspath(os.path.dirname(os.path.abspath(__file__))) + os.path.sep + RENAME_FILE_NAME
+    print '重命名文件路径：', RENAME_FILE_PATH
+    if FILE_NAME in list:
+        if os.path.exists(RENAME_FILE_PATH):
+            os.remove(RENAME_FILE_PATH)
+            os.rename(FILE_NAME, 'rename_' + FILE_NAME)
+        else:
+            os.rename(FILE_NAME, 'rename_' + FILE_NAME)
+            print '文件:%s 重命名为:%s' % (FILE_NAME, 'rename_' + FILE_NAME)
+    else:
+        print '%s 不存在' % (FILE_NAME)
+
+
+# 修改文件后缀名
+def test_change_extension():
+    print 'test_change_extension() 修改文件后缀名函数'
+    import os
+    file_lst = os.listdir('.')
+    for file_name in file_lst:
+        pos = file_name.find('.')
+        # print 'type file_name:', type(file_name)
+        if file_name[pos + 1:] == 'txt':
+            new_ext = file_name[:pos + 1] + 'txt_ext'
+            os.rename(file_name, new_ext)
+        else:
+            print '没有后缀是txt的文件'
+
+
+# 输出文件的名称和后缀名
+def test_file_name_and_ext():
+    import os.path
+    print '\n输出文件名称和文件后缀'
+    files = os.listdir('.')
+    for file_name in files:
+        lst = os.path.splitext(file_name)
+        print lst
+        print 'name:%s , extension:%s' % (lst[0], lst[1])
+
+
+# 文件复制
+def test_copy_file():
+    print '文件:%s 复制为:%s' % (FILE_NAME, 'cpy_' + FILE_NAME)
+    src = open(FILE_NAME, 'r')
+    dest = open('cpy_' + FILE_NAME, 'w')
+    dest.write(src.read())
+    print '文件复制成功'
+    src.close()
+    dest.close()
+
+
+def word_count_analytics():
+    print 'word_count_analytics() 字母统计函数'
+    import re, os
+    FILE_STR = 'find_str.dat'
+    FILE_STR_PATH = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + FILE_STR
+    f = open(FILE_STR_PATH, 'r')
+    cnt = 0
+    for s in f.readlines():
+        # print 'content:', s, ' \t type:', type(s)
+        li = re.findall('f', s)
+        # print 'li:', li, ' \t type:', type(li)
+        if len(li) > 0:
+            cnt = cnt + li.count('f')
+    print '共有:', str(cnt) + ' 个 \'f\''
+    f.close()
+
+
+# 文件替换
+def test_file_replace():
+    print '文件内容替换函数'
+    import os
+    file_src_name = 'file_src.dat'
+    file_dst_name = 'file_dst.dat'
+    print os.path.abspath(__file__)
+    print 'parent dir:', os.path.dirname(os.path.abspath(__file__))
+    current_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
+    print current_path
+    file_src_path = current_path + os.path.sep + file_src_name
+    file_dst_path = current_path + os.path.sep + file_dst_name
+    print file_src_path
+    print file_dst_path
+    f_src = open(file_src_name, 'r')
+    f_dst = open(file_dst_name, 'w+')
+    print 'f_src content:',f_src.read()
+    f_src.seek(0)
+    src_cont = f_src.readlines()
+    print 'encoding:'
+    for s in src_cont:
+        # 将小写o替换为大写O,并写入dest文件
+        #f_dst.write(s.replace('o', 'O'))
+        f_dst.writelines(str(s.replace("o","O")))
+    f_dst.seek(0)
+    f_src.close()
+    print '替换后,文件dest内容\n'
+    '''dst_cont = f_dst.readlines()
+    for s in dst_cont:
+        print s'''
+    print f_dst.read()
+    f_dst.close()
 
 
 # 文件删除
@@ -152,10 +286,10 @@ def test_remove():
     import os
     open(FILE_NAME, 'w+')
     current_path = os.path.abspath(__file__)
-    print 'type of __file__ :',__file__
+    print 'type of __file__:%s, __file__:%s' % (type(__file__), __file__)
     parent_path = os.path.abspath(os.path.dirname(current_path))
-    print '当前文件路径:',current_path
-    print '当前目录路径:',parent_path
+    print '当前文件路径:', current_path
+    print '当前目录路径:', parent_path
     remove_file_abs_path = parent_path + os.path.sep + FILE_NAME
     print '要删除的文件路径:', remove_file_abs_path
     if os.path.exists(remove_file_abs_path):
@@ -173,4 +307,10 @@ if __name__ == '__main__':
     test_read()
     test_read_param()
     test_file_write()
+    test_copy_file()
+    test_file_rename()
     test_remove()
+    test_change_extension()
+    test_file_name_and_ext()
+    word_count_analytics()
+    test_file_replace()
