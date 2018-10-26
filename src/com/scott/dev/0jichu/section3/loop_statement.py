@@ -17,9 +17,9 @@ def loop_statement():
 # else:
 #    ...
 def while_statment_loop():
-    #number = input('输入几个数字,以逗号分隔:\n').split(",")
-    #print number
-    number=[1,2,3,4,5]
+    # number = input('输入几个数字,以逗号分隔:\n').split(",")
+    # print number
+    number = [1, 2, 3, 4, 5]
     x = 0
     while x < len(number):
         print number[x]

@@ -17,6 +17,8 @@ if(condition):
 else:
     statement2
 """
+
+
 def if_condition():
     a = input("a:")
     a = int(a)
@@ -29,7 +31,6 @@ def if_condition():
     else:
         print a, '<', b
 
-
 # if..elif..else条件语句
 """
 if(condition1):
@@ -39,13 +40,15 @@ elif(condition2):
 else:
     statement3
 """
+
+
 def if_elif_else_condition():
     score = float(input("score:"))
-    if (score>=90 and score<=100):
+    if (score >= 90 and score <= 100):
         print 'A'
-    elif (score>=80 and score<90):
+    elif (score >= 80 and score < 90):
         print 'B'
-    elif (score>=60 and score<80):
+    elif (score >= 60 and score < 80):
         print 'C'
     else:
         print 'D'

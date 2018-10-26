@@ -10,6 +10,7 @@ Created on 2018年10月14日
 
 import sys
 
+
 def sys_module_info():
     print "sys.path = ", sys.path
     print "sys.api_version=", sys.api_version
@@ -18,11 +19,15 @@ def sys_module_info():
     print "sys.byteorder = ", sys.byteorder
     # print sys.copyright
     print sys.callstats()
+
+
 def var_info():
     x = 1
-    print "id(x)=",id(x)
+    print "id(x)=", id(x)
     x = 2
-    print "id(x)=",id(x)
+    print "id(x)=", id(x)
+
+
 if __name__ == '__main__':
-    #sys_module_info()
+    # sys_module_info()
     var_info()
