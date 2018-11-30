@@ -14,5 +14,6 @@ build/
 .project
 .pydevproject
 
-/src/com/scott/dev/feed/*
+
 *.xml
+src/com/scott/dev/bigdata/feeds
