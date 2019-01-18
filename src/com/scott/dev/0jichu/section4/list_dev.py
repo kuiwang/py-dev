@@ -11,6 +11,9 @@ Created on 2018年10月19日
 # 列表添加：append(obj),obj可以是元组、列表、字典或任何对象
 # 列表删除：remove(),ex:remove(obj),删除元素obj，若obj不在列表中，跑出ValueError异常
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 def list_access():
     print "list_access函数开始"

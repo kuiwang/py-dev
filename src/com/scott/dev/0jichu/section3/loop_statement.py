@@ -35,7 +35,7 @@ def while_statment_loop():
 def for_statement_loop():
     for x in range(-3, 5):
         if(x > 0):
-            print '整数:', x
+            print '正数:', x
         elif x == 0:
             print '零:', x
         else:
