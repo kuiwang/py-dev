@@ -10,6 +10,7 @@ import logging
 import requests
 import mysqlutils
 import pymysql
+import traceback
 
 reload(sys)  
 sys.setdefaultencoding('utf8')
@@ -23,6 +24,7 @@ LOG_FORMATTER = '%(asctime)s-%(levelname)s - %(filename)s - %(funcName)s - %(lin
 s = requests.Session()
 MZT_AUTHORITY = "www.mzitu.com"
 MZT_HOMEPAGE = "https://www.mzitu.com"
+MZT_DOWNLOAD_PATH = PY_GEN_PATH + "/mzt/"
 
 
 def config_logger():
@@ -51,6 +53,19 @@ def post_url(url):
         txt = r.text
         # logger.info("response:" + txt)
         return txt
+    except Exception, e:
+        return ""
+        logger.error(e)
+
+
+def post_img_url(model_url, url):
+    try:
+        HEADER_UA = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
+        HEADER_REFER = model_url
+        header = {"User-Agent":HEADER_UA, "Referer":HEADER_REFER}
+        r = s.get(url, headers=header)
+        # logger.info("response:" + txt)
+        return r
     except Exception, e:
         return ""
         logger.error(e)
@@ -111,56 +126,100 @@ def getTotalModelPhotoNum(url):
 
 def getModelUrl():
     cur = conn.cursor()
-    sql = "select id,name,url from album_info1 t "
+    sql = "select id,name,url from album_info t "
     cur.execute(sql)
     rs = cur.fetchall()
     for r in rs:
         id = r[0]
         name = r[1]
         url = r[2]
-        logger.info("id:" + str(id) + " | name:" + name + " | " + url)
+        cur1 = conn.cursor()
+        sql = "select model_id from model_photo t where model_id =  " + str(id)
+        cur1.execute(sql)
+        row = cur1.fetchone()
+        if row:
+            logger.info(str(id) + " 已经存在于数据库中，忽略")
+            continue
         model_total_photo = int(getTotalModelPhotoNum(url))
+        saveModelPhoto(id, name, 1, url, url)
+        logger.info("id:" + str(id) + " | name:" + name + " | " + url + " | total:" + str(model_total_photo))
         for x in range(2, model_total_photo + 1):
+            # logger.info("index:" + str(x))
             model_photo_url = url + "/" + str(x)
-            saveModelPhoto(id, name, x, model_photo_url)
+            saveModelPhoto(id, name, x, url, model_photo_url)
 
 
-def saveModelPhoto(id, name, img_no , url):
-    logger.info("save model photo")
+def saveModelPhoto(id, name, img_no , model_url, photo_url):
     param = []
-    cur = conn.cursor()
-    html = post_url(url)
+    logger.info("photo url:" + photo_url)
+    html = post_url(photo_url)
     # logger.info("resp:\n" + html)
     soup = BeautifulSoup(html, "lxml")
-    div_cont = soup.find('body').find(name='div', attrs={"class":"main"}).find(name='div', attrs={"class":"content"})
-    img_url = div_cont.find(name="div", attrs={"class":"main-image"}).find("p").find("a").find("img").get("src")
-    logger.info("img_url:" + img_url)
-    img_cont = post_url(img_url)
-    img_name = img_url.split('/')[-1]
-    img_path = os.getcwd() + "/" + img_name
-    logger.info("img_path:" + img_path)
-    img_f = open(img_path, 'wb')
-    img_f.write(img_cont)
-    img_f.flush()
-    fin = open(img_path, 'rb')
-    img_b = fin.read()
-    img_str = pymysql.escape_string(img_b)
-    param.append([id, img_no, img_str])
-    logger.info(str(id) + " | " + str(img_no) + " | " + url)
-    sql = "insert into model_photo(model_id,photo_id,photo) values(%s,%s,%s)"
-    insert_count = cur.executemany(sql, param)
-    conn.commit()
-    logger.info("save insert_count:" + str(insert_count))
-    logger.info("id:")
-    fin.close()
-    img_f.close()
+    try:
+        cur = conn.cursor()
+        div_cont = soup.find('body').find(name='div', attrs={"class":"main"}).find(name='div', attrs={"class":"content"})
+        img_url = div_cont.find(name="div", attrs={"class":"main-image"}).find("p").find("a").find("img").get("src")
+        logger.info("image url:" + img_url)
+        img_cont = post_img_url(model_url, img_url)
+        img_name = img_url.split('/')[-1]
+        if (name.find(":") > -1 or name.find("?") > -1):
+            name = name.replace(":", "-")
+            name = name.replace("?", "-")
+        dir_name = MZT_DOWNLOAD_PATH + "\\" + name
+        if not os.path.exists(dir_name):
+            logger.info('文件夹:' + dir_name + '不存在')
+            os.makedirs(dir_name, 777)
+            logger.info('创建文件夹 ' + dir_name + '成功')
+        img_path = dir_name + "\\" + img_name
+        logger.info("image real path:" + img_path)
+        img_f = open(img_path, 'wb')
+        img_f.write(img_cont.content)
+        img_f.flush()
+        fin = open(img_path, 'rb')
+        img_b = fin.read()
+        img_str = pymysql.escape_string(img_b)
+        param.append([id, img_no, img_url, img_path])
+        logger.info(str(id) + " | " + str(img_no) + " | " + photo_url)
+        sql = "insert into model_photo(model_id,img_id,img_url,img_path) values(%s,%s,%s,%s)"
+        insert_count = cur.executemany(sql, param)
+        # logger.info("save photo count:" + str(insert_count))
+        conn.commit()
+    except Exception as e:
+        logger.error(traceback.format_exc())
+        pass
+    finally:
+        img_f.close()
+        fin.close()
+        cur.close()
+
+
+def test():
+    cur = conn.cursor()
+    sql = "select id,name,url from album_info t "
+    cur.execute(sql)
+    rs = cur.fetchall()
+    for r in rs:
+        id = r[0]
+        name = r[1]
+        url = r[2]
+        cur1 = conn.cursor()
+        sql = "select model_id from model_photo t where model_id =  " + str(id)
+        cur1.execute(sql)
+        row = cur1.fetchone()
+        if row:
+            logger.info(str(id) + " already2 exists in db ,missed")
+            continue
+        logger.info(str(id) + " not2 exists in db , needed continue")
+        logger.info("go on a!")
+    cur1.close()
     cur.close()
 
 
 if __name__ == '__main__':
     config_logger()
     conn = mysqlutils.connect_mysql()
-    # saveAlbumInfo() #save personal photo url
+#     saveAlbumInfo() #save personal photo url
     getModelUrl()
+    # test()
     conn.close()
 
