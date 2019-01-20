@@ -13,7 +13,7 @@ build/
 .settings
 .project
 .pydevproject
-
+*.pyc
 
 *.xml
 src/com/scott/dev/bigdata/feeds
