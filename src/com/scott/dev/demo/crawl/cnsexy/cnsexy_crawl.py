@@ -61,8 +61,8 @@ def get_url(url, refer=None):
         else:
             header['referer'] = refer
         # r = s.get(url, headers=header,verify=False)
-        header['scheme']='https'
-        header['cookie']='__cfduid=df1919a684c0ef2fe5908c392a9c1dca61547900851'
+        header['scheme'] = 'https'
+        header['cookie'] = '__cfduid=df1919a684c0ef2fe5908c392a9c1dca61547900851'
         r = s.get(url, headers=header, proxies={"socks5":"127.0.0.1:58506"})
         content = r.content
         data = brotli.decompress(content)
@@ -178,37 +178,37 @@ def getModelUrl():
 def saveModelPhoto(id, name , model_url):
     param = []
     html = get_url(model_url, CNSXY_HOMEPAGE)
-    logger.info("resp:\n" + html)
+    # logger.info("resp:\n" + html)
     soup = BeautifulSoup(html, "lxml")
     try:
         cur = conn.cursor()
-        main_element = soup.find('body').find(name='div', attrs={"id":"page"}).find(name='div', attrs={"class":"content"}).find(name='div', attrs={"class":"container clearfix"}).find(name="div" , attrs={"id":"primary"}).find(name="main", attrs={"id":"main"})
+        main_element = soup.find('body').find(name='div', attrs={"id":"page"}).find(name='div', attrs={"id":"content"}).find(name='div', attrs={"class":"container clearfix"}).find(name="div" , attrs={"id":"primary"}).find(name="main", attrs={"id":"main"})
         entry_content = main_element.find("article").find(name="div", attrs={"class":"entry-content clearfix"}).find(name="div").find(name="div", attrs={"class":"grid-gallery-photos"})
         a_list = entry_content.findAll("a", attrs={"class":"gg-link"})
         i = 0
+        dir_name = CNSXY_DOWNLOAD_PATH + "\\" + name
+        if not os.path.exists(dir_name):
+            logger.info('文件夹:' + dir_name + '不存在')
+            os.makedirs(dir_name, 777)
+            logger.info('创建文件夹 ' + dir_name + '成功')
         for a in a_list:
             i = i + 1
             img_id = i
             img_url = a.get("href")
             img_name = a.get("alt")
             logger.info("img url:" + img_url)
-        
-        img_cont = post_img_url(model_url, img_url, model_url)
-        img_name = img_url.split('/')[-1]
-        dir_name = CNSXY_DOWNLOAD_PATH + "\\" + name
-        if not os.path.exists(dir_name):
-            logger.info('文件夹:' + dir_name + '不存在')
-            os.makedirs(dir_name, 777)
-            logger.info('创建文件夹 ' + dir_name + '成功')
-        img_path = dir_name + "\\" + img_name
-        logger.info("image real path:" + img_path)
-        img_f = open(img_path, 'wb')
-        img_f.write(img_cont.content)
-        img_f.flush()
-        fin = open(img_path, 'rb')
-        img_b = fin.read()
-        param.append([id, img_id, img_url, img_path])
-        logger.info(str(id) + " | " + str(img_no) + " | " + photo_url)
+            img_cont = post_img_url(model_url, img_url, model_url)
+            img_name = img_url.split('/')[-1].split("?")[0]
+            logger.info("img name:" + img_name)
+            img_path = dir_name + "\\" + img_name
+            logger.info("image real path:" + img_path)
+            img_f = open(img_path, 'wb')
+            img_f.write(img_cont.content)
+            img_f.flush()
+            fin = open(img_path, 'rb')
+            img_b = fin.read()
+            param.append([id, img_id, img_url, img_path])
+            logger.info(str(id) + " | " + str(img_id) + " | " + img_url)
         sql = "insert into model_photo(model_id,img_id,img_url,img_path) values(%s,%s,%s,%s)"
         insert_count = cur.executemany(sql, param)
         # logger.info("save photo count:" + str(insert_count))
