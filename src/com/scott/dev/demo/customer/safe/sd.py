@@ -40,9 +40,10 @@ def post_url(url, send_data):
         HEADER_ACCEPT = "text/json"
         header = {"User-Agent":HEADER_UA, "method":HEADER_METHOD, "Accept":HEADER_ACCEPT}
         r = s.post(url, data=send_data, headers=header)
-        txt = r.content
+        status = r.status_code
+        if status == 200:
+            return r.content
         # logger.info("response:" + txt)
-        return txt
     except Exception, e:
         return ""
         logger.error(e)
@@ -82,7 +83,7 @@ def smtData(url, account, filename):
     with open(filename, 'r') as f:
         for cont in f:
             cont = cont.strip()
-            #logger.info("content:" + cont)
+            # logger.info("content:" + cont)
             if len(cont) != 32:
                 continue
             i = i + 1
@@ -100,9 +101,8 @@ def smtData(url, account, filename):
                 }
                 json_post_body = json.dumps(post_body).encode("utf-8")
                 items = []
-                i = 0
                 # post_url(url, json_post_body)
-                logger.info("第" + str(i / 100) + "次:" + str(account) + " | " + str(now) + " | " + sign + " |post data:" + str(json_post_body))
+                logger.info("第" + str(i / 100) + "次: 已处理" + str(i) + "条 |" + str(account) + " | " + str(now) + " | " + sign + " |post data:" + str(json_post_body))
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         m2.update(str(account) + str(now) + str(API_KEY))
         sign = m2.hexdigest()
@@ -113,7 +113,7 @@ def smtData(url, account, filename):
             "items":items
         }
         json_post_body = json.dumps(post_body).encode("utf-8")
-        logger.info("第" + str(i / 100) + "次:" + str(account) + " | " + str(now) + " | " + str(sign) + " |post data:" + str(json_post_body))
+        logger.info("第" + str(i / 100) + "次: 已处理" + str(i) + "条 |" + str(account) + " | " + str(now) + " | " + sign + " |post data:" + str(json_post_body))
         # post_url(api, post_data)
 
 
