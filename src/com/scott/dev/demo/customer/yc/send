@@ -1,6 +1,6 @@
-CREATE TABLE `recv_info` (
-    `id` VARCHAR(50) NULL DEFAULT NULL,
-    `report_time` VARCHAR(50) NULL DEFAULT NULL,
+CREATE TABLE `send_info` (
+    `id` VARCHAR(50) NULL,
+    `send_time` VARCHAR(50) NULL DEFAULT NULL,
     `car_info` VARCHAR(1024) NULL DEFAULT NULL,
     `city_name` VARCHAR(50) NULL DEFAULT NULL,
     `user_name` VARCHAR(50) NOT NULL,
@@ -13,8 +13,11 @@ CREATE TABLE `recv_info` (
     `client_ip` VARCHAR(128) NULL DEFAULT NULL,
     `send_status` VARCHAR(128) NULL DEFAULT NULL,
     `recv_time` VARCHAR(50) NULL DEFAULT NULL,
-    `conv_url` VARCHAR(1024) NULL DEFAULT NULL
+    `conv_url` VARCHAR(1024) NULL DEFAULT NULL,
+    INDEX `idx_id` (`id`),
+    INDEX `idx_send_ts` (`send_time`)
 )
+COMMENT='易车快速报表发送记录-send'
 COLLATE='utf8mb4_general_ci'
 ENGINE=InnoDB
 ;

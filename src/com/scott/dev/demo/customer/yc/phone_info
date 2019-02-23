@@ -1,0 +1,11 @@
+CREATE TABLE `phone_info` (
+    `phone` VARCHAR(50) NOT NULL COMMENT '手机号码',
+    `province` VARCHAR(50) NULL DEFAULT NULL COMMENT '省份',
+    `city` VARCHAR(50) NULL DEFAULT NULL COMMENT '市',
+    `carrier` VARCHAR(50) NULL DEFAULT NULL COMMENT '运营商',
+    PRIMARY KEY (`phone`)
+)
+COMMENT='手机归属地信息'
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;

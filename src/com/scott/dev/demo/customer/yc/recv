@@ -18,8 +18,11 @@ CREATE TABLE `recv_info` (
     `shops` VARCHAR(50) NULL DEFAULT NULL,
     `code` VARCHAR(1024) NULL DEFAULT NULL,
     `status` VARCHAR(1024) NULL DEFAULT NULL,
-    `leads_url` VARCHAR(1024) NULL DEFAULT NULL
+    `leads_url` VARCHAR(1024) NULL DEFAULT NULL,
+    INDEX `idx_id` (`id`),
+    INDEX `idx_rep_ts` (`report_time`)
 )
+COMMENT='易车快速报表接收记录-recv'
 COLLATE='utf8mb4_general_ci'
 ENGINE=InnoDB
 ;

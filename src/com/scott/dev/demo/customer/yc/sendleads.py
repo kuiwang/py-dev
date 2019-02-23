@@ -16,9 +16,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/bitauto".replace('/', os.sep)
-YC_INDEX_FILE = "bitauto_index.xml"
-YC_FEED_LOC = "bitauto_loc.xml"
-logger = logging.getLogger('bitauto_feed')
+logger = logging.getLogger('sendleads')
 LOG_FILE = 'bitauto_autoleads.log'
 # LOG_FORMATTER = '%(asctime)s - %(filename)s - %(funcName)s - %(lineno)d - %(threadName)s - %(process)d - %(name)s - %(levelname)s - %(message)s'
 LOG_FORMATTER = '%(asctime)s-%(levelname)s - %(filename)s - %(funcName)s - %(lineno)d - %(message)s'
@@ -53,6 +51,7 @@ def init_parser():
                         )
     return parser
 
+
 def saveRecvInfo(filename):
     param = []
     cur = conn.cursor()
@@ -69,27 +68,29 @@ def saveRecvInfo(filename):
         abnormal = 0
         for send_info in content:
             num = num + 1
-            send_info = send_info.strip().decode('gbk').replace('"', '')
+            send_info = send_info.strip().decode('gbk')
             # logger.info(send_info)
             if send_info.find('http') < 0:
                 abnormal = abnormal + 1 
                 logger.info("abormal info:" + send_info)
                 lst_without_conv = send_info.split(',')
-                conv_url = lst_without_conv[14]
-                pid = lst_without_conv[0]
-                send_time = lst_without_conv[1]
-                car_info = lst_without_conv[2]
-                city_name = lst_without_conv[3]
-                user_name = lst_without_conv[4]
-                cs_name = lst_without_conv[5]
-                recv_shop = lst_without_conv[6]
-                recv_csid = lst_without_conv[7]
-                send_csid = lst_without_conv[8]
-                send_remark = lst_without_conv[9]
-                send_shop = lst_without_conv[10]
-                client_ip = lst_without_conv[11]
-                send_status = lst_without_conv[12]
-                recv_time = lst_without_conv[13]
+                conv_url = lst_without_conv[-1].replace('"', '')
+                pid = lst_without_conv[0].replace('"', '')
+                send_time = lst_without_conv[1].replace('"', '')
+                car_info = lst_without_conv[2].replace('"', '')
+                city_name = lst_without_conv[3].replace('"', '')
+                user_name = lst_without_conv[4].replace('"', '')
+                cs_name = lst_without_conv[5].replace('"', '')
+                recv_shop = lst_without_conv[6].replace('"', '')
+                recv_csid = lst_without_conv[7].replace('"', '')
+                send_csid = lst_without_conv[8].replace('"', '')
+                send_remark = lst_without_conv[9].replace('"', '')
+                send_shop = lst_without_conv[-5].replace('"', '')
+                client_ip = lst_without_conv[-4].replace('"', '')
+                send_status = lst_without_conv[-3].replace('"', '')
+                recv_time = lst_without_conv[-2].replace('"', '')
+                if pid == '':
+                    logger.info('without_http_pid_null | send_info:' + send_info)
                 param.append([str(pid), str(send_time), str(car_info), str(city_name) ,
                                   str(user_name), str(cs_name), str(recv_shop), str(recv_csid),
                                   str(send_csid), str(send_remark), str(send_shop), str(client_ip),
@@ -101,25 +102,26 @@ def saveRecvInfo(filename):
                     param = []
             else:
                 lst_send = send_info.split('http')
-                before_conv_url = lst_send[0]
+                before_conv_url = lst_send[0].replace('"', '')
                 lst_without_conv = before_conv_url.split(',')
-                conv_url = 'http' + lst_send[1]
+                conv_url = 'http' + lst_send[1].replace('"', '')
                 lst_without_conv = lst_without_conv[:-1]
-                size = len(lst_without_conv)
-                pid = lst_without_conv[0]
-                send_time = lst_without_conv[1]
-                car_info = lst_without_conv[2]
-                city_name = lst_without_conv[3]
-                user_name = lst_without_conv[4]
-                cs_name = lst_without_conv[5]
-                recv_shop = lst_without_conv[6]
-                recv_csid = lst_without_conv[7]
-                send_csid = lst_without_conv[8]
-                send_remark = lst_without_conv[9]
-                send_shop = lst_without_conv[10]
-                client_ip = lst_without_conv[11]
-                send_status = lst_without_conv[12]
-                recv_time = lst_without_conv[13]
+                pid = lst_without_conv[0].replace('"', '')
+                send_time = lst_without_conv[1].replace('"', '')
+                car_info = lst_without_conv[2].replace('"', '')
+                city_name = lst_without_conv[3].replace('"', '')
+                user_name = lst_without_conv[4].replace('"', '')
+                cs_name = lst_without_conv[5].replace('"', '')
+                recv_shop = lst_without_conv[6].replace('"', '')
+                recv_csid = lst_without_conv[7].replace('"', '')
+                send_csid = lst_without_conv[8].replace('"', '')
+                send_remark = lst_without_conv[9].replace('"', '')
+                send_shop = lst_without_conv[-4].replace('"', '')
+                client_ip = lst_without_conv[-3].replace('"', '')
+                send_status = lst_without_conv[-2].replace('"', '')
+                recv_time = lst_without_conv[-1].replace('"', '')
+                if pid == '':
+                    logger.info('with_http_pid_null | send_info:' + send_info)
                 # logger.info(pid + " | " + car_info)
                 param.append([str(pid), str(send_time), str(car_info), str(city_name) ,
                                   str(user_name), str(cs_name), str(recv_shop), str(recv_csid),

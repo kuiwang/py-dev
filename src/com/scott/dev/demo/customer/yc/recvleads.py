@@ -17,9 +17,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/bitauto".replace('/', os.sep)
-YC_INDEX_FILE = "bitauto_index.xml"
-YC_FEED_LOC = "bitauto_loc.xml"
-logger = logging.getLogger('bitauto_feed')
+logger = logging.getLogger('recvleads')
 LOG_FILE = 'bitauto_autoleads.log'
 # LOG_FORMATTER = '%(asctime)s - %(filename)s - %(funcName)s - %(lineno)d - %(threadName)s - %(process)d - %(name)s - %(levelname)s - %(message)s'
 LOG_FORMATTER = '%(asctime)s-%(levelname)s - %(filename)s - %(funcName)s - %(lineno)d - %(message)s'
