@@ -32,3 +32,28 @@ from recv_info t
 where t.report_time between '2019-02-14' and '2019-02-22' 
 ) r
 on s.id = r.id 
+
+#增加了phone_info里的手机归属地的信息
+select str_to_date(r.report_time,'%Y-%m-%d') as recv_day ,
+str_to_date(s.send_time,'%Y-%m-%d') as send_day,  
+s.recv_shop as recv, 
+s.recv_csid as recv_cs , 
+s.send_shop as send ,
+s.send_csid as send_cs ,
+r.shops as r_shops ,
+r.province , r.city ,r.phone ,p.province,p.city 
+from 
+(
+select * 
+from send_info t 
+where t.send_time between '2019-02-14' and '2019-02-22' and t.send_remark like '%成功%'
+) s 
+join 
+(
+select * 
+from recv_info t 
+where t.report_time between '2019-02-14' and '2019-02-22' 
+) r
+on s.id = r.id 
+join phone_info p
+on r.phone = p.phone 
