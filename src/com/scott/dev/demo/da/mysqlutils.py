@@ -34,7 +34,7 @@ LOG_FORMATTER = '%(asctime)s-%(levelname)s - %(filename)s - %(funcName)s - %(lin
 
 SRC_NAME = "src"
 CONF_DIR = os.path.join(os.getcwd().split(SRC_NAME)[0], SRC_NAME, 'conf')
-MYSQL_JSON_CFG = "mysql_json_all.cfg"
+MYSQL_JSON_CFG = "mysql_json_yc.cfg"
 
 
 def config_logger():
@@ -70,15 +70,16 @@ def connect_mysql():
         config = find(MYSQL_JSON_CFG, CONF_DIR)
         with open(config, "r") as file:
             load_dict = json.load(file)
-            h = load_dict['database']['mzt']['host']
-            u = load_dict['database']['mzt']['user']
-            p = load_dict['database']['mzt']['password']
-            port = load_dict['database']['mzt']['port']
-            cs = load_dict['database']['mzt']['charset']
-            db = load_dict['database']['mzt']['db']
+            h = load_dict['database']['da']['host']
+            u = load_dict['database']['da']['user']
+            p = load_dict['database']['da']['password']
+            port = load_dict['database']['da']['port']
+            cs = load_dict['database']['da']['charset']
+            db = load_dict['database']['da']['db']
             logger.info(h + "," + u + "," + p + "," + str(port) + "," + cs + "," + db)
             conn = pymysql.connect(database=db, host=h, user=u, password=p, charset=cs,port =port)
         return conn
+        # return pymysql.connect(cursorclass=pymysql.cursors.DictCursor, **load_dict)
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error("cannot create mysql connect")

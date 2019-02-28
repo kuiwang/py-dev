@@ -60,9 +60,9 @@ def config_logger():
 
 
 def saveFeed(account_id, feed_url):
-    # 读取feed url生成索引文件地址
+   urld url生成索引文件地址
     parseAndSaveIndex(feed_url)
-    parseLocFile(os.path.join(PY_GEN_PATH, YC_FEED_LOC))
+    parseurlos.path.join(PY_GEN_PATH, YC_FEED_LOC))
 
 
 def parseLocFile(loc_file):
@@ -126,8 +126,8 @@ def saveLoc(loc_url):
 
 
 def parseAndSaveIndex(feed_url):
-    idx_txt = get_url(feed_url)
-    idx_file_path = os.path.join(PY_GEN_PATH, YC_INDEX_FILE)
+    idx_urlt_url(feed_url)
+    idx_furl = os.path.join(PY_GEN_PATH, YC_INDEX_FILE)
     with open(idx_file_path, 'w') as f:
         f.write(idx_txt)
         f.flush()
@@ -145,9 +145,9 @@ def parseAndSaveIndex(feed_url):
         outer_id_txt = outer_id.text
         if outer_id_txt.find(".xml") <= 0:
             outer_id_txt = outer_id_txt + ".xml"
-            feed_url = feed_prefix + outer_id_txt
+            feed_url = feed_preurlter_id_txt
         loc_file.write(feed_url + "\n")
-    loc_file.flush()
+  urlle.flush()
     loc_file.close()
 
 
@@ -177,7 +177,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     account_id = args.account
     feed_url = args.url
+  urlaveFeed(account_id, feed_url)
     
-    saveFeed(account_id, feed_url)
-    
-    conn.close()
+    conurl)

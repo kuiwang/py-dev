@@ -232,7 +232,7 @@ if __name__ == '__main__':
     config_logger()
     conn = mysqlutils.connect_mysql()
     # saveAlbumInfo()  # save personal photo url
-    getModelUrl()
+    #getModelUrl()
     # test()
     conn.close()
 

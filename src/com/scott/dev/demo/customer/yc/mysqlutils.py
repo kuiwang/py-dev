@@ -34,7 +34,7 @@ LOG_FORMATTER = '%(asctime)s-%(levelname)s - %(filename)s - %(funcName)s - %(lin
 
 SRC_NAME = "src"
 CONF_DIR = os.path.join(os.getcwd().split(SRC_NAME)[0], SRC_NAME, 'conf')
-MYSQL_JSON_CFG = "mysql_json_yc.cfg"
+MYSQL_JSON_CFG = "mysql_json_all.cfg"
 
 
 def config_logger():
@@ -70,12 +70,12 @@ def connect_mysql():
         config = find(MYSQL_JSON_CFG, CONF_DIR)
         with open(config, "r") as file:
             load_dict = json.load(file)
-            h = load_dict['host']
-            u = load_dict['user']
-            p = load_dict['password']
-            port = load_dict['port']
-            cs = load_dict['charset']
-            db = load_dict['db']
+            h = load_dict['database']['yc']['host']
+            u = load_dict['database']['yc']['user']
+            p = load_dict['database']['yc']['password']
+            port = load_dict['database']['yc']['port']
+            cs = load_dict['database']['yc']['charset']
+            db = load_dict['database']['yc']['db']
             logger.info(h + "," + u + "," + p + "," + str(port) + "," + cs + "," + db)
             conn = pymysql.connect(database=db, host=h, user=u, password=p, charset=cs,port =port)
         return conn
