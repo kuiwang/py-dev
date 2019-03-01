@@ -1,3 +1,6 @@
+#create user
+grant all privileges on test.* to 'testusr'@'%' identified by 'testpwd'
+
 #create database
 create database `da` default charset 'utf8mb4' collate 'utf8mb4_general_ci'
 

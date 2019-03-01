@@ -8,12 +8,13 @@ import os, sys
 from bs4 import BeautifulSoup
 import logging
 import requests
-import mysqlutils
 import pymysql
 import traceback
+from com.scott.dev.util.mysqlpool import MySQLConnPool
+from importlib import reload
 
 reload(sys)  
-sys.setdefaultencoding('utf8')
+#sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/".replace('/', os.sep)
 logger = logging.getLogger('mztcraw')
@@ -125,18 +126,14 @@ def getTotalModelPhotoNum(url):
 
 
 def getModelUrl():
-    cur = conn.cursor()
     sql = "select id,name,url from album_info t "
-    cur.execute(sql)
-    rs = cur.fetchall()
+    rs = conn.queryall(sql)
     for r in rs:
         id = r[0]
         name = r[1]
         url = r[2]
-        cur1 = conn.cursor()
         sql = "select model_id from model_photo t where model_id =  " + str(id)
-        cur1.execute(sql)
-        row = cur1.fetchone()
+        row = conn.queryone(sql)
         if row:
             logger.info(str(id) + " 已经存在于数据库中，忽略")
             continue
@@ -181,45 +178,21 @@ def saveModelPhoto(id, name, img_no , model_url, photo_url):
         param.append([id, img_no, img_url, img_path])
         logger.info(str(id) + " | " + str(img_no) + " | " + photo_url)
         sql = "insert into model_photo(model_id,img_id,img_url,img_path) values(%s,%s,%s,%s)"
-        insert_count = cur.executemany(sql, param)
+        insert_count = conn.insertmany(sql, param)
         # logger.info("save photo count:" + str(insert_count))
-        conn.commit()
     except Exception as e:
         logger.error(traceback.format_exc())
         pass
     finally:
         img_f.close()
         fin.close()
-        cur.close()
-
-
-def test():
-    cur = conn.cursor()
-    sql = "select id,name,url from album_info t "
-    cur.execute(sql)
-    rs = cur.fetchall()
-    for r in rs:
-        id = r[0]
-        name = r[1]
-        url = r[2]
-        cur1 = conn.cursor()
-        sql = "select model_id from model_photo t where model_id =  " + str(id)
-        cur1.execute(sql)
-        row = cur1.fetchone()
-        if row:
-            logger.info(str(id) + " already2 exists in db ,missed")
-            continue
-        logger.info(str(id) + " not2 exists in db , needed continue")
-        logger.info("go on a!")
-    cur1.close()
-    cur.close()
 
 
 if __name__ == '__main__':
     config_logger()
-    conn = mysqlutils.connect_mysql()
+    conn = MySQLConnPool('mzt')
 #     saveAlbumInfo() #save personal photo url
     getModelUrl()
     # test()
-    conn.close()
+    conn.dispose(1)
 

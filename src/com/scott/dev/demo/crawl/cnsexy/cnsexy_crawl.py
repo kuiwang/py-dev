@@ -8,13 +8,12 @@ import os, sys
 from bs4 import BeautifulSoup
 import logging
 import requests
-import mysqlutils
-import pymysql
 import traceback
 import brotli
+from com.scott.dev.util.mysqlpool import MySQLConnPool
+from importlib import reload
 
 reload(sys)  
-sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/".replace('/', os.sep)
 logger = logging.getLogger('cnsxy')
@@ -120,7 +119,6 @@ def getTotalAlbumPageNum(url):
 def parseAlbumPageAndSave(url):
     html = get_url(url)
     param = []
-    cur = conn.cursor()
     if html == "":
         pass
     soup = BeautifulSoup(html, "lxml")
@@ -137,10 +135,8 @@ def parseAlbumPageAndSave(url):
         param.append([id, name, href])
         logger.info("page_url:" + url + " | " + id + " | " + name + " | " + href)
     sql = "insert into album_info(id,name,url) values(%s,%s,%s)"
-    insert_count = cur.executemany(sql, param)
-    conn.commit()
+    insert_count = conn.insertmany(sql, param)
     logger.info("save insert_count:" + str(insert_count))
-    cur.close()
 
 
 def saveAlbumInfo():
@@ -163,10 +159,8 @@ def getModelUrl():
         id = r[0]
         name = r[1]
         model_url = r[2]
-        cur1 = conn.cursor()
         sql = "select model_id from model_photo t where model_id =  " + str(id)
-        cur1.execute(sql)
-        row = cur1.fetchone()
+        row = conn.queryone(sql)
         if row:
             logger.info(str(id) + " 已经存在于数据库中，忽略")
             continue
@@ -181,7 +175,6 @@ def saveModelPhoto(id, name , model_url):
     # logger.info("resp:\n" + html)
     soup = BeautifulSoup(html, "lxml")
     try:
-        cur = conn.cursor()
         main_element = soup.find('body').find(name='div', attrs={"id":"page"}).find(name='div', attrs={"id":"content"}).find(name='div', attrs={"class":"container clearfix"}).find(name="div" , attrs={"id":"primary"}).find(name="main", attrs={"id":"main"})
         entry_content = main_element.find("article").find(name="div", attrs={"class":"entry-content clearfix"}).find(name="div").find(name="div", attrs={"class":"grid-gallery-photos"})
         a_list = entry_content.findAll("a", attrs={"class":"gg-link"})
@@ -210,16 +203,14 @@ def saveModelPhoto(id, name , model_url):
             param.append([id, img_id, img_url, img_path])
             logger.info(str(id) + " | " + str(img_id) + " | " + img_url)
         sql = "insert into model_photo(model_id,img_id,img_url,img_path) values(%s,%s,%s,%s)"
-        insert_count = cur.executemany(sql, param)
+        insert_count = conn.insertmany(sql, param)
         # logger.info("save photo count:" + str(insert_count))
-        conn.commit()
     except Exception as e:
         logger.error(traceback.format_exc())
         pass
     finally:
         img_f.close()
         fin.close()
-        cur.close()
 
 
 def test():
@@ -230,9 +221,9 @@ def test():
 
 if __name__ == '__main__':
     config_logger()
-    conn = mysqlutils.connect_mysql()
+    conn = MySQLConnPool('cnsxy')
     # saveAlbumInfo()  # save personal photo url
-    #getModelUrl()
+    # getModelUrl()
     # test()
-    conn.close()
+    conn.dispose(1)
 

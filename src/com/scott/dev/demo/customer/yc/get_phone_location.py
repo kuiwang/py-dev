@@ -7,12 +7,13 @@ Created on 2018年12月14日
 import os, sys, json
 import logging
 import requests
-import mysqlutils
+from com.scott.dev.util.mysqlpool import MySQLConnPool
 from bs4 import BeautifulSoup 
 import argparse
+from importlib import reload
 
 reload(sys)  
-sys.setdefaultencoding('utf8')
+#sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/bitauto".replace('/', os.sep)
 
@@ -61,11 +62,9 @@ def config_logger():
 def getPhoneList(startDate, endDate):
     logger.info('getPhoneList between ' + startDate + ' and ' + endDate)
     phoneLst = []
-    cur = conn.cursor()
     select_sql = 'select distinct phone from recv_info t where t.report_time between "' + startDate + '" and "' + endDate + '" '
     try:
-        cur.execute(select_sql)
-        res = cur.fetchall()
+        res = conn.queryall(select_sql)
         for row in res:
             phoneLst.append(row[0])
         return phoneLst
@@ -81,11 +80,9 @@ def isPhoneExist(phone):
         logger.error("phone length is:" + str(size))
         return False
     logger.info('check phone:' + phone + " exists or not ?")
-    cur = conn.cursor()
     select_sql = 'select distinct phone from phone_info t where t.phone= "' + phone + '" '
     try:
-        cur.execute(select_sql)
-        res = cur.fetchone()
+        res = conn.queryone(select_sql)
         if res:
             logger.info("phone:" + phone + " exists in database")
             return True
@@ -114,13 +111,12 @@ def getPhoneLocation(api, phone):
 def savePhone2DB(phone, phoneObj):
     logger.info('savePhone2DB | save phone:' + phone + " | phoneObj:" + json.dumps(phoneObj))
     param = []
-    cur = conn.cursor()
     province = phoneObj['data']['province']
     city = phoneObj['data']['city']
     carrier = phoneObj['data']['sp']
     insert_sql = 'insert into phone_info values(%s,%s,%s,%s)'
     param.append([str(phone), str(province), str(city), str(carrier)])
-    insert_count = cur.executemany(insert_sql, param)
+    insert_count = conn.insertmany(insert_sql, param)
     conn.commit()
     logger.info('save phone:' + phone + " and phoneObj " + json.dumps(phoneObj) + " successful! count:" + str(insert_count))
 
@@ -169,7 +165,7 @@ def init_parser():
 
 
 if __name__ == '__main__':
-    conn = mysqlutils.connect_mysql()
+    conn = MySQLConnPool('yc')
     config_logger()
     
     parser = init_parser()
@@ -180,4 +176,4 @@ if __name__ == '__main__':
     
     savePhoneLocation(startDate, endDate, api)
     # getPhoneLocation('http://cx.shouji.360.cn/phonearea.php?number=', '13839508196')
-    conn.close()
+    conn.dispose(1)

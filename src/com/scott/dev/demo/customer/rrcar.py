@@ -8,9 +8,10 @@ import os, sys, json
 import hashlib
 import logging
 import requests
+from importlib import reload
 
 reload(sys)  
-sys.setdefaultencoding('utf8')
+# sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/".replace('/', os.sep)
 logger = logging.getLogger('renrencar')
@@ -94,8 +95,8 @@ def rrc_c1():
     }
     json_user_info = json.dumps(user_info).encode()
     logger.info("user_info:" + json_user_info)
-    #unsign_data = json_user_info + token + str(ts)
-    data_list=[json_user_info,token,str(ts)]
+    # unsign_data = json_user_info + token + str(ts)
+    data_list = [json_user_info, token, str(ts)]
     unsign_data = ''.join(data_list)
     logger.info("before md5 ,data:" + unsign_data)
     m2.update(unsign_data)

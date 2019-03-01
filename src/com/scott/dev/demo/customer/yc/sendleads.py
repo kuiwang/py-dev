@@ -6,14 +6,14 @@ Created on 2019年2月19日
 @author: user
 '''
 import os, sys, json
-import csv, codecs
 import logging
 import requests
-import mysqlutils
+from com.scott.dev.util.mysqlpool import MySQLConnPool
 import argparse
+from importlib import reload
 
 reload(sys)  
-sys.setdefaultencoding('utf8')
+#sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/bitauto".replace('/', os.sep)
 logger = logging.getLogger('sendleads')
@@ -54,13 +54,11 @@ def init_parser():
 
 def saveRecvInfo(filename):
     param = []
-    cur = conn.cursor()
     with open(filename, 'r') as f:
         title = f.readline()
         header = f.readline()
         # logger.info(title)
         # logger.info(header)
-        cur = conn.cursor()
         insert_sql = 'insert into send_info(`id`,send_time,`car_info`,`city_name`,`user_name`,`cs_name`,`recv_shop`,`recv_csid` ,`send_csid` ,`send_remark`,`send_shop`,`client_ip`,`send_status`,recv_time,`conv_url` )'
         insert_sql = insert_sql + ' values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         content = f.readlines()
@@ -96,8 +94,7 @@ def saveRecvInfo(filename):
                                   str(send_csid), str(send_remark), str(send_shop), str(client_ip),
                                   str(send_status), str(recv_time), str(conv_url)])
                 if (num % 1000 == 0):
-                    insert_count = cur.executemany(insert_sql, param)
-                    conn.commit()
+                    insert_count = conn.insertmany(insert_sql, param)
                     logger.info('No:' + str((num / 1000)) + " | save insert_count:" + str(insert_count))
                     param = []
             else:
@@ -128,19 +125,18 @@ def saveRecvInfo(filename):
                                   str(send_csid), str(send_remark), str(send_shop), str(client_ip),
                                   str(send_status), str(recv_time), str(conv_url)])
                 if (num % 1000 == 0):
-                    insert_count = cur.executemany(insert_sql, param)
+                    insert_count = conn.insertmany(insert_sql, param)
                     conn.commit()
                     logger.info('No:' + str((num / 1000)) + " | save insert_count:" + str(insert_count))
                     param = []
-        insert_count = cur.executemany(insert_sql, param)
+        insert_count = conn.insertmany(insert_sql, param)
         conn.commit()
         logger.info("save insert_count:" + str(insert_count))
         logger.info("abnormal count:" + str(abnormal) + " | total num:" + str(num))
-        cur.close()
 
 
 if __name__ == '__main__':
-    conn = mysqlutils.connect_mysql()
+    conn = MySQLConnPool('yc')
     config_logger()
     
     parser = init_parser()
@@ -152,4 +148,4 @@ if __name__ == '__main__':
     except Exception, e:
         logger.error(e)
     
-    conn.close()
+    conn.dispose(1)

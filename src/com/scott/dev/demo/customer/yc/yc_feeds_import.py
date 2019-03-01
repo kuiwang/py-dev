@@ -7,12 +7,13 @@ Created on 2018年12月14日
 import os, sys, json
 import logging
 import requests
-import mysqlutils
+from com.scott.dev.util.mysqlpool import MySQLConnPool
 import argparse
 from bs4 import BeautifulSoup 
+from importlib import reload
 
 reload(sys)  
-sys.setdefaultencoding('utf8')
+# sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/bitauto".replace('/', os.sep)
 YC_INDEX_FILE = "bitauto_index.xml"
@@ -60,9 +61,9 @@ def config_logger():
 
 
 def saveFeed(account_id, feed_url):
-   urld url生成索引文件地址
+    # 读取feed url生成索引文件地址
     parseAndSaveIndex(feed_url)
-    parseurlos.path.join(PY_GEN_PATH, YC_FEED_LOC))
+    parseLocFile(os.path.join(PY_GEN_PATH, YC_FEED_LOC))
 
 
 def parseLocFile(loc_file):
@@ -78,7 +79,6 @@ def saveLoc(loc_url):
     idx_txt = get_url(loc_url)
     param = []
     file_name = loc_url.split("/")[-1]
-    cur = conn.cursor()
     file_abs_path = os.path.join(PY_GEN_PATH + os.path.sep, file_name)
     soup = BeautifulSoup(idx_txt, "lxml-xml")
     insert_sql = "insert into yc_info(pid,name,image,url,murl,img_width,img_height,brand,category,sub_cat,third_cat,related_ids,cut_price,model_url,m_model_url,quote_price,leads_url,status,emission,origin,country,price_lowest,price_highest,runk_num)"
@@ -119,15 +119,13 @@ def saveLoc(loc_url):
                           str(tijiaodealerUrl), str(saleStatus), str(emission), str(origin),
                           str(country), str(priceLowest), str(priceHighest), str(runkNum)]
             )
-    insert_count = cur.executemany(insert_sql, param)
-    conn.commit()
+    insert_count = conn.insertmany(insert_sql, param)
     logger.info("save insert_count:" + str(insert_count))
-    cur.close()
 
 
 def parseAndSaveIndex(feed_url):
-    idx_urlt_url(feed_url)
-    idx_furl = os.path.join(PY_GEN_PATH, YC_INDEX_FILE)
+    idx_txt = get_url(feed_url)
+    idx_file_path = os.path.join(PY_GEN_PATH, YC_INDEX_FILE)
     with open(idx_file_path, 'w') as f:
         f.write(idx_txt)
         f.flush()
@@ -145,9 +143,9 @@ def parseAndSaveIndex(feed_url):
         outer_id_txt = outer_id.text
         if outer_id_txt.find(".xml") <= 0:
             outer_id_txt = outer_id_txt + ".xml"
-            feed_url = feed_preurlter_id_txt
+            feed_url = feed_prefix + outer_id_txt
         loc_file.write(feed_url + "\n")
-  urlle.flush()
+    loc_file.flush()
     loc_file.close()
 
 
@@ -170,13 +168,14 @@ def init_parser():
 
 
 if __name__ == '__main__':
-    conn = mysqlutils.connect_mysql()
+    conn = MySQLConnPool('yc')
     config_logger()
     
     parser = init_parser()
     args = parser.parse_args()
     account_id = args.account
     feed_url = args.url
-  urlaveFeed(account_id, feed_url)
     
-    conurl)
+    saveFeed(account_id, feed_url)
+    
+    conn.dispose(1)

@@ -5,13 +5,13 @@ Created on 2018年12月14日
 @author: user
 '''
 import os, sys, json
-import hashlib
 import logging
 import requests
-import mysqlutils
+from com.scott.dev.util.mysqlpool import MySQLConnPool
+from importlib import reload
 
-reload(sys)  
-sys.setdefaultencoding('utf8')
+reload(sys)
+#sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/".replace('/', os.sep)
 logger = logging.getLogger('yc_galaxy')
@@ -34,7 +34,7 @@ def post_url(url, send_data):
         r = s.post(url, data=send_data, headers=header)
         txt = r.text
         logger.info("response:" + txt)
-    except Exception, e:
+    except Exception as e:
         logger.error(e)
     return txt
 
@@ -68,7 +68,6 @@ def saveBrand(month_start, month_end):
     brand_info = queryInfo(0, month_start, month_end)
     data = brand_info["data"]
     param = []
-    cur = conn.cursor()
     for d in data:
         pv = d["pv"]
         name = d["name"]
@@ -76,17 +75,14 @@ def saveBrand(month_start, month_end):
         param.append([str(id), name, str(pv), str(month_start) + "," + str(month_end)])
     sql = "insert into brand_info(id ,name,pv,month) values(%s,%s,%s,%s)"
     logger.info("insert sql:\n" + sql)
-    insert_count = cur.executemany(sql, param)
-    conn.commit()
+    insert_count = conn.insertmany(sql, param)
     logger.info("save insert_count:" + str(insert_count))
-    cur.close()
 
 
 def saveCorp(month_start, month_end):
     corp_info = queryInfo(1, month_start, month_end)
     data = corp_info["data"]
     param = []
-    cur = conn.cursor()
     for d in data:
         pv = d["pv"]
         name = d["name"]
@@ -94,17 +90,14 @@ def saveCorp(month_start, month_end):
         param.append([str(id), name, str(pv), str(month_start) + "," + str(month_end)])
     sql = "insert into corp_info(id ,name,pv,month) values(%s,%s,%s,%s)"
     logger.info("insert sql:\n" + sql)
-    insert_count = cur.executemany(sql, param)
-    conn.commit()
+    insert_count = conn.insertmany(sql, param)
     logger.info("save insert_count:" + str(insert_count))
-    cur.close()
 
 
 def saveModel(month_start, month_end):
     model_info = queryInfo(2, month_start, month_end)
     data = model_info["data"]
     param = []
-    cur = conn.cursor()
     for d in data:
         pv = d["pv"]
         name = d["name"]
@@ -112,17 +105,14 @@ def saveModel(month_start, month_end):
         param.append([str(id), name, str(pv), str(month_start) + "," + str(month_end)])
     sql = "insert into model_info(id ,name,pv,month) values(%s,%s,%s,%s)"
     logger.info("insert sql:\n" + sql)
-    insert_count = cur.executemany(sql, param)
-    conn.commit()
+    insert_count = conn.insertmany(sql, param)
     logger.info("save insert_count:" + str(insert_count))
-    cur.close()
 
     
 def saveCar(month_start, month_end):
     car_info = queryInfo(3, month_start, month_end)
     data = car_info["data"]
     param = []
-    cur = conn.cursor()
     for d in data:
         pv = d["pv"]
         name = d["name"]
@@ -130,10 +120,8 @@ def saveCar(month_start, month_end):
         param.append([str(id), name, str(pv), str(month_start) + "," + str(month_end)])
     sql = "insert into car_info(id ,name,pv,month) values(%s,%s,%s,%s)"
     logger.info("insert sql:\n" + sql)
-    insert_count = cur.executemany(sql, param)
-    conn.commit()
+    insert_count = conn.insertmany(sql, param)
     logger.info("save insert_count:" + str(insert_count))
-    cur.close()
 
 
 def saveData(year):
@@ -149,16 +137,10 @@ def saveData(year):
         saveModel(cond_start_month, cond_start_month)
         saveCar(cond_start_month, cond_start_month)
 
-    
-def testParseAlbumPageAndSave():
-    import datetime
-    ts = datetime.datetime.now()
-    print ts
-
 
 if __name__ == '__main__':
-    conn = mysqlutils.connect_mysql()
+    conn = MySQLConnPool('yc')
     config_logger()
     saveData("2018")
-    conn.close()
+    conn.dispose(1)
     # testParseAlbumPageAndSave()
