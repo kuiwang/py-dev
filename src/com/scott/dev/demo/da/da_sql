@@ -4,3 +4,81 @@ grant all privileges on test.* to 'testusr'@'%' identified by 'testpwd'
 #create database
 create database `da` default charset 'utf8mb4' collate 'utf8mb4_general_ci'
 
+#create table
+CREATE TABLE `ssq` (
+    `kjrq` VARCHAR(50) NULL DEFAULT NULL COMMENT '开奖日期',
+    `qh` VARCHAR(50) NULL DEFAULT NULL COMMENT '期号',
+    `zjhm` VARCHAR(50) NULL DEFAULT NULL COMMENT '中奖号码',
+    `r1` VARCHAR(50) NULL DEFAULT NULL COMMENT '红1',
+    `r2` VARCHAR(50) NULL DEFAULT NULL COMMENT '红2',
+    `r3` VARCHAR(50) NULL DEFAULT NULL COMMENT '红3',
+    `r4` VARCHAR(50) NULL DEFAULT NULL COMMENT '红4',
+    `r5` VARCHAR(50) NULL DEFAULT NULL COMMENT '红5',
+    `r6` VARCHAR(50) NULL DEFAULT NULL COMMENT '红6',
+    `b1` VARCHAR(50) NULL DEFAULT NULL COMMENT '蓝1',
+    `xse` VARCHAR(50) NULL DEFAULT NULL COMMENT '销售额',
+    `cat1` VARCHAR(50) NULL DEFAULT NULL COMMENT '一等奖人数',
+    `cat2` VARCHAR(50) NULL DEFAULT NULL COMMENT '二等奖人数'
+)
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB;
+
+#all query
+select num,red1,red2,red3,red4,red5,red6,(red1+red2+red3+red4+red5+red6) as total 
+from 
+(
+select num ,
+case when red1 is null then 0  else red1 end as red1 ,
+case when red2 is null then 0  else red2 end as red2,
+case when red3 is null then 0  else red3 end as red3,
+case when red4 is null then 0  else red4 end as red4,
+case when red5 is null then 0  else red5 end as red5,
+case when red6 is null then 0  else red6 end as red6
+from red r 
+left join
+(select r1,count(1) as red1 from ssq t  group by r1 ) s1 on r.num = s1.r1 
+left join
+(select r2,count(1) as red2 from ssq t  group by r2 ) s2 on r.num = s2.r2 
+left join
+(select r3,count(1) as red3 from ssq t  group by r3 ) s3 on r.num = s3.r3 
+left join
+(select r4,count(1) as red4 from ssq t  group by r4 ) s4 on r.num = s4.r4 
+left join
+(select r5,count(1) as red5 from ssq t  group by r5 ) s5 on r.num = s5.r5 
+left join
+(select r6,count(1) as red6 from ssq t  group by r6 ) s6 on r.num = s6.r6 
+) r 
+
+
+
+
+#to 2016-11-03
+select num,red1,red2,red3,red4,red5,red6,(red1+red2+red3+red4+red5+red6) as total 
+from 
+(
+select num ,
+case when red1 is null then 0  else red1 end as red1 ,
+case when red2 is null then 0  else red2 end as red2,
+case when red3 is null then 0  else red3 end as red3,
+case when red4 is null then 0  else red4 end as red4,
+case when red5 is null then 0  else red5 end as red5,
+case when red6 is null then 0  else red6 end as red6
+from red r 
+left join
+(select r1,count(1) as red1 from ssq t where str_to_date(t.kjrq,'%Y-%m-%d')<='2016-11-03' group by r1 ) s1 on r.num = s1.r1 
+left join
+(select r2,count(1) as red2 from ssq t where str_to_date(t.kjrq,'%Y-%m-%d')<='2016-11-03' group by r2 ) s2 on r.num = s2.r2 
+left join
+(select r3,count(1) as red3 from ssq t where str_to_date(t.kjrq,'%Y-%m-%d')<='2016-11-03' group by r3 ) s3 on r.num = s3.r3 
+left join
+(select r4,count(1) as red4 from ssq t where str_to_date(t.kjrq,'%Y-%m-%d')<='2016-11-03' group by r4 ) s4 on r.num = s4.r4 
+left join
+(select r5,count(1) as red5 from ssq t where str_to_date(t.kjrq,'%Y-%m-%d')<='2016-11-03' group by r5 ) s5 on r.num = s5.r5 
+left join
+(select r6,count(1) as red6 from ssq t where str_to_date(t.kjrq,'%Y-%m-%d')<='2016-11-03' group by r6 ) s6 on r.num = s6.r6 
+) r 
+
+
+
+
+
