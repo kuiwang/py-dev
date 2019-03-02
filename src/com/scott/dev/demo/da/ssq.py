@@ -107,7 +107,7 @@ def saveDetail(url):
             select_sql = "select * from ssq t where t.qh = '" + qh + "'"
             isExist = conn.queryall(select_sql)
             if isExist:
-                logger.info("期号:%s 已存在".format(str(qh)))
+                logger.info("期号:{} 已存在".format(str(qh)))
             else:
                 
                 param.append([str(kjrq), str(qh), str(zjhm), str(r1) ,
