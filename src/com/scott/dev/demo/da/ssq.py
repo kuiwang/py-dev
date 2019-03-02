@@ -73,6 +73,10 @@ def saveDetail(url):
     soup = BeautifulSoup(content, "lxml")
     tbl = soup.find("body").find("table")
     tr_list = tbl.findAll(name="tr")
+    total = 0
+    param = []
+    insert_sql = "insert into ssq (kjrq,qh,zjhm,r1,r2,r3,r4,r5,r6,b1,xse,cat1,cat2)"
+    insert_sql = insert_sql + ' values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
     for tr in tr_list:
         td_list = tr.findAll(name="td")
         td_size = len(td_list)
@@ -80,16 +84,39 @@ def saveDetail(url):
             continue
         # logger.info("td size:" + str(td_size))
         if td_size == 7:
+            total = total + 1
             kjrq = td_list[0].text
             qh = td_list[1].text
             em_list = td_list[2].findAll("em")
             zjhm = ""
             for em in em_list:
                 zjhm = zjhm + em.text + ","
-            xse = td_list[3].find("strong").text.replace(",","")
+            arr = zjhm.split(',')
+            r1 = arr[0]
+            r2 = arr[1]
+            r3 = arr[2]
+            r4 = arr[3]
+            r5 = arr[4]
+            r6 = arr[5]
+            b1 = arr[6]
+            
+            xse = td_list[3].find("strong").text.replace(",", "")
             cat1 = td_list[4].find("strong").text
             cat2 = td_list[5].find("strong").text
-            logger.info(kjrq + " | " + str(qh) + " | " + zjhm + " | " + str(xse) + " | " + str(cat1) + " | " + str(cat2))
+            # logger.info(kjrq + " | " + str(qh) + " | " + str(zjhm) + " | " + str(r1) + "|" + str(r2) + "|" + str(r3) + "|" + str(r4) + "|" + str(r5) + "|" + str(r6) + "|" + str(b1) + " | " + str(xse) + " | " + str(cat1) + " | " + str(cat2))
+            select_sql = "select * from ssq t where t.qh = '" + qh + "'"
+            isExist = conn.queryall(select_sql)
+            if isExist:
+                logger.info("期号:%s 已存在".format(str(qh)))
+            else:
+                
+                param.append([str(kjrq), str(qh), str(zjhm), str(r1) ,
+                                      str(r2), str(r3), str(r4), str(r5),
+                                      str(r6), str(b1), str(xse), str(cat1), str(cat2)])
+    insert_count = conn.insertmany(insert_sql, param)
+    conn.end('commit')
+    logger.info("save insert_count:" + str(insert_count))
+    logger.info("url:" + url + " | total record:" + str(total))
 
 
 def getPageAndRecordNum(url):
@@ -127,13 +154,13 @@ def init_parser():
 
 
 if __name__ == '__main__':
-    conn = MySQLConnPool("yc")
+    conn = MySQLConnPool("test")
     config_logger()
     
     parser = init_parser()
     args = parser.parse_args()
     url = args.url
     
-    # saveSSQ(url)
-    saveDetail(url)
+    saveSSQ(url)
+    # saveDetail(url)
     conn.dispose(1)
