@@ -68,7 +68,7 @@ def get_url(url, refer=None):
         data1 = data.decode('utf-8')
         # logger.info("response:\n" + data1)
         return data1
-    except Exception, e:
+    except Exception as e:
         logger.error(e)
 
 
@@ -98,7 +98,7 @@ def post_img_url(model_url, url, refer=None):
         # r = s.get(url, headers=header,verify=False)
         r = s.get(url, headers=header, proxies={"socks5":"127.0.0.1:58506"})
         return r
-    except Exception, e:
+    except Exception as e:
         return ""
         logger.error(e)
 
@@ -131,11 +131,12 @@ def parseAlbumPageAndSave(url):
         id = article.get("id").split('-')[-1]
         name = album_a.get("title")
         href = album_a.get('href')
-        print name + ' | ' + href
+        logger.info(name + ' | ' + href)
         param.append([id, name, href])
         logger.info("page_url:" + url + " | " + id + " | " + name + " | " + href)
     sql = "insert into album_info(id,name,url) values(%s,%s,%s)"
     insert_count = conn.insertmany(sql, param)
+    conn.end('commit')
     logger.info("save insert_count:" + str(insert_count))
 
 
@@ -150,11 +151,9 @@ def saveAlbumInfo():
 
 
 def getModelUrl():
-    cur = conn.cursor()
     # sql = "select id,name,model_url from album_info t "
     sql = "select id,name,url from album_info t "
-    cur.execute(sql)
-    rs = cur.fetchall()
+    rs = conn.queryall(sql)
     for r in rs:
         id = r[0]
         name = r[1]
@@ -204,7 +203,8 @@ def saveModelPhoto(id, name , model_url):
             logger.info(str(id) + " | " + str(img_id) + " | " + img_url)
         sql = "insert into model_photo(model_id,img_id,img_url,img_path) values(%s,%s,%s,%s)"
         insert_count = conn.insertmany(sql, param)
-        # logger.info("save photo count:" + str(insert_count))
+        conn.end('commit')
+        logger.info("save photo count:" + str(insert_count))
     except Exception as e:
         logger.error(traceback.format_exc())
         pass
@@ -222,8 +222,8 @@ def test():
 if __name__ == '__main__':
     config_logger()
     conn = MySQLConnPool('cnsxy')
-    # saveAlbumInfo()  # save personal photo url
-    # getModelUrl()
+    saveAlbumInfo()  # save personal photo url
+    getModelUrl()
     # test()
     conn.dispose(1)
 
