@@ -14,7 +14,7 @@ import argparse
 from importlib import reload
 
 reload(sys)  
-#sys.setdefaultencoding('utf8')
+# sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/bitauto".replace('/', os.sep)
 logger = logging.getLogger('recvleads')
@@ -65,7 +65,7 @@ def saveRecvInfo(filename):
         abnormal = 0
         for recv_info in content:
             num = num + 1
-            recv_info = recv_info.strip().decode('gbk')
+            recv_info = recv_info.strip()
             name_4s = ''
             code_4s = ''
             replaceorder = ''
@@ -118,39 +118,39 @@ def saveRecvInfo(filename):
                         tmp_usr_info = user_info.replace(':""""', ':"no-value"').replace('"""",', '"",').replace('""', '"')
                         dict_usr_info = json.loads(tmp_usr_info)
                         # dict_usr_info = json.loads(user_info)
-                    except Exception , e:
+                    except Exception as e:
                         logger.error('json exception')
-                    if dict_usr_info.has_key('car'): 
+                    if 'car' in dict_usr_info: 
                         car_name = dict_usr_info['car']
                     else:
                         car_name = 'None_car'
-                    if dict_usr_info.has_key('name'): 
+                    if 'name' in dict_usr_info: 
                         user_name = dict_usr_info['name']
                     else:
                         user_name = 'None_car_name'
-                    if dict_usr_info.has_key('phone'): 
+                    if 'phone' in dict_usr_info: 
                         bs64_phone = dict_usr_info['phone']
                         real_phone = base64.b64decode(bs64_phone).decode()
                     else:
                         bs64_phone = 'None_car_name'
                         real_phone = 'real_phone'
-                    if dict_usr_info.has_key('province'): 
+                    if 'province' in dict_usr_info: 
                         province = dict_usr_info['province']
                     else:
                         province = 'None_province'
-                    if dict_usr_info.has_key('city'): 
+                    if 'city' in dict_usr_info: 
                         city = dict_usr_info['city']
                     else:
                         city = 'None_city'
-                    if dict_usr_info.has_key('4sname'): 
+                    if '4sname' in dict_usr_info: 
                         name_4s = dict_usr_info['4sname']
                     else:
                         name_4s = 'None_4sname'
-                    if dict_usr_info.has_key('4scode'):
+                    if '4scode' in dict_usr_info:
                         code_4s = dict_usr_info['4scode']
                     else:
                         code_4s = 'None_4scode'
-                    if dict_usr_info.has_key('replaceorder'):
+                    if 'replaceorder' in dict_usr_info:
                         replaceorder = dict_usr_info['replaceorder']
                     else:
                         replaceorder = 'None_replaceorder'
@@ -218,39 +218,40 @@ def saveRecvInfo(filename):
                     try:
                         tmp_usr_info = user_info.replace(':""""', ':"no-value"').replace('"""",', '"",').replace('""', '"')
                         dict_usr_info = json.loads(tmp_usr_info.replace('""', '"'))
-                    except Exception , e:
+                    except Exception as e:
                         logger.error('json exception')
-                    if dict_usr_info.has_key('car'): 
+                    # if dict_usr_info.has_key('car'):
+                    if 'car ' in dict_usr_info: 
                         car_name = dict_usr_info['car']
                     else:
                         car_name = 'None_car'
-                    if dict_usr_info.has_key('name'): 
+                    if 'name' in dict_usr_info: 
                         user_name = dict_usr_info['name']
                     else:
                         user_name = 'None_name'
-                    if dict_usr_info.has_key('phone'): 
+                    if 'phone' in dict_usr_info: 
                         bs64_phone = dict_usr_info['phone']
                         real_phone = base64.b64decode(bs64_phone).decode()
                     else:
                         bs64_phone = 'None_phone'
                         real_phone = 'None_real_phone'
-                    if dict_usr_info.has_key('province'): 
+                    if 'province' in dict_usr_info: 
                         province = dict_usr_info['province']
                     else:
                         province = 'None_province'
-                    if dict_usr_info.has_key('city'): 
+                    if 'city' in dict_usr_info: 
                         city = dict_usr_info['city']
                     else:
                         city = 'None_city'
-                    if dict_usr_info.has_key('4sname'): 
+                    if '4sname' in dict_usr_info: 
                         name_4s = dict_usr_info['4sname']
                     else:
                         name_4s = 'None_4sname'
-                    if dict_usr_info.has_key('4scode'):
+                    if '4scode' in dict_usr_info:
                         code_4s = dict_usr_info['4scode']
                     else:
                         code_4s = 'None_4scode'
-                    if dict_usr_info.has_key('replaceorder'):
+                    if 'replaceorder' in dict_usr_info:
                         replaceorder = dict_usr_info['replaceorder']
                     else:
                         replaceorder = 'None_replaceorder'
@@ -296,7 +297,7 @@ if __name__ == '__main__':
     
     try:
         saveRecvInfo(csv_url)
-    except Exception, e:
+    except Exception as e:
         logger.error(e)
     
     conn.dispose(1)
