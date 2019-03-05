@@ -16,8 +16,6 @@ reload(sys)
 # sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/ssq".replace('/', os.sep)
-YC_INDEX_FILE = "bitauto_index.xml"
-YC_FEED_LOC = "bitauto_loc.xml"
 logger = logging.getLogger('ssq_da')
 LOG_FILE = 'ssq_da.log'
 # LOG_FORMATTER = '%(asctime)s - %(filename)s - %(funcName)s - %(lineno)d - %(threadName)s - %(process)d - %(name)s - %(levelname)s - %(message)s'
@@ -154,7 +152,7 @@ def init_parser():
 
 
 if __name__ == '__main__':
-    conn = MySQLConnPool("test")
+    conn = MySQLConnPool("da")
     config_logger()
     
     parser = init_parser()
