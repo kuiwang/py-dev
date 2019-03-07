@@ -37,7 +37,7 @@ def get_url(url):
         r = s.get(url, headers=header)
         r.encoding = "utf-8"
         # logger.info("response:\n" + r.text)
-    except Exception, e:
+    except Exception as e:
         logger.error(e)
     return r.text
 
