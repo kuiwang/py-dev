@@ -132,8 +132,8 @@ def saveRecvInfo(filename):
                         bs64_phone = dict_usr_info['phone']
                         real_phone = base64.b64decode(bs64_phone).decode()
                     else:
-                        bs64_phone = 'None_car_name'
-                        real_phone = 'real_phone'
+                        bs64_phone = 'None_phone'
+                        real_phone = 'None_real_phone'
                     if 'province' in dict_usr_info: 
                         province = dict_usr_info['province']
                     else:
@@ -221,7 +221,7 @@ def saveRecvInfo(filename):
                     except Exception as e:
                         logger.error('json exception')
                     # if dict_usr_info.has_key('car'):
-                    if 'car ' in dict_usr_info: 
+                    if 'car' in dict_usr_info: 
                         car_name = dict_usr_info['car']
                     else:
                         car_name = 'None_car'
