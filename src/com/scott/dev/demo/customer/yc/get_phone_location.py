@@ -36,7 +36,7 @@ def get_url(url):
         r = s.get(url, headers=header)
         r.encoding = "utf-8"
         # logger.info("response:\n" + r.text)
-    except Exception, e:
+    except Exception as e:
         logger.error(e)
     return r.text
 
@@ -117,7 +117,7 @@ def savePhone2DB(phone, phoneObj):
     insert_sql = 'insert into phone_info values(%s,%s,%s,%s)'
     param.append([str(phone), str(province), str(city), str(carrier)])
     insert_count = conn.insertmany(insert_sql, param)
-    conn.commit()
+    conn.end('commit')
     logger.info('save phone:' + phone + " and phoneObj " + json.dumps(phoneObj) + " successful! count:" + str(insert_count))
 
 
