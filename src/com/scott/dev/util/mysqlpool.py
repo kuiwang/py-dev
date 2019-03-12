@@ -83,7 +83,7 @@ class MySQLConnPool(object):
                     prt = load_dict['database'][dbname]['port']
                     cs = load_dict['database'][dbname]['charset']
                     database = load_dict['database'][dbname]['db']
-                    logger.info("getConn | host:" + h + " | user:" + u + " | port:" + str(prt) + " | charset:" + cs + " | database:" + database)
+                    #logger.info("getConn | host:" + h + " | user:" + u + " | port:" + str(prt) + " | charset:" + cs + " | database:" + database)
                     __pool = PooledDB(creator=pymysql, mincached=1 , maxcached=20 , host=h , port=prt , user=u, passwd=p , db=database, use_unicode=True, charset=cs)
             except Exception as e:
                 logger.error(traceback.format_exc())
@@ -108,7 +108,7 @@ class MySQLConnPool(object):
                 result = self._cur.fetchall()
             else:
                 result = False
-            logger.info("queryall | sql:" + sql + " | rows:" + str(rows))
+            #logger.info("queryall | sql:" + sql + " | rows:" + str(rows))
             return result
         except Exception as e:
             logger.error(traceback.format_exc())
@@ -132,7 +132,7 @@ class MySQLConnPool(object):
                 result = self._cur.fetchone()
             else:
                 result = False
-            logger.info("queryone | sql:" + sql + " | row:" + str(row))
+            #logger.info("queryone | sql:" + sql + " | row:" + str(row))
             return result
         except Exception as e:
             logger.error(traceback.format_exc())
@@ -156,7 +156,7 @@ class MySQLConnPool(object):
                 result = self._cur.fetchmany(num)
             else:
                 result = False
-            logger.info("querymany | sql:" + sql + " | num:" + str(num) + " | rows:" + str(rows))
+            #logger.info("querymany | sql:" + sql + " | num:" + str(num) + " | rows:" + str(rows))
             return result
         except Exception as e:
             logger.error(traceback.format_exc())
@@ -174,7 +174,7 @@ class MySQLConnPool(object):
         try:
             self._cur.execute(sql, value)
             lastrowid = self._cur.lastrowid
-            logger.error("insertone | sql:{} | param:{} | rowid:{}".format(sql, value, str(lastrowid)))
+            #logger.error("insertone | sql:{} | rowid:{}".format(sql, str(lastrowid)))
         except Exception as e:
             logger.error(traceback.format_exc())
             logger.error("insertone | sql:{} | param:{}".format(sql, value))
@@ -191,7 +191,7 @@ class MySQLConnPool(object):
         cnt = 0
         try:
             cnt = self._cur.executemany(sql, values)
-            logger.info("insertmany | sql:{} | param:{} | cnt:{}".format(sql, values, str(cnt)))
+            #logger.info("insertmany | sql:{} | cnt:{}".format(sql, str(cnt)))
         except Exception as e:
             logger.error(traceback.format_exc())
             logger.error("insertmany | sql:{} param:{}".format(sql, values))
@@ -211,7 +211,7 @@ class MySQLConnPool(object):
                 cnt = self._cur.execute(sql)
             else:
                 cnt = self._cur.execute(sql, param)
-            logger.info("execute | sql:{} | param:{} | cnt:{}".format(sql, param, str(cnt)))
+            #logger.info("execute | sql:{} | cnt:{}".format(sql, str(cnt)))
         except Exception as e:
             logger.error(traceback.format_exc())
             logger.error("execute | sql:{} | param:{}".format(sql, param))
@@ -219,6 +219,7 @@ class MySQLConnPool(object):
         return cnt
     
     def update(self, sql, param=None):
+        #logger.info('update | sql:{},param={}'.format(sql,str(param)))
         """
             @summary: 更新数据表记录
             @param sql: ＳＱＬ格式及条件，使用(%s,%s)

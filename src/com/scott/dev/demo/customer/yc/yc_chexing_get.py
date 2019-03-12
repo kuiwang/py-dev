@@ -59,7 +59,8 @@ def config_logger():
 
 
 def getCarModel():
-  getModelCarInfofo("getCarModel startgetModelCarInfoct_sql = 'select pid,url,leads_url from yc_info t where instr(t.pid,"-")=0 order by pid '
+    logger.info("getCarModel start")
+    select_sql = 'select pid,url,leads_url from yc_info t where instr(t.pid,"-")=0 order by pid '
     return conn.queryall(select_sql)
 
 
@@ -111,7 +112,7 @@ def checkCarExist(model_id, car_id):
 def saveCarInfo():
     logger.info("saveCarInfo start")
     model_lst = getCarModel()
-   getModelCarInfo(model_lst)
+    size = len(model_lst)
     logger.info("size:{}".format(size))
     for i in range(size):
         # logger.info('model[{}] = {}'.format(str(i),str(''.join(model_lst[i]))))
