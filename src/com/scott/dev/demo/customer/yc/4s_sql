@@ -1,0 +1,53 @@
+CREATE TABLE `4s_list` (
+    `id` VARCHAR(50) NULL DEFAULT NULL COMMENT '4s店ID',
+    `name` VARCHAR(64) NULL DEFAULT NULL COMMENT '4s店名称',
+    `address` VARCHAR(1024) NULL DEFAULT NULL COMMENT '4s地址',
+    `tel` VARCHAR(128) NULL DEFAULT NULL COMMENT '4s电话',
+    `area` VARCHAR(128) NULL DEFAULT NULL COMMENT '4s区域',
+    `city` VARCHAR(64) NULL DEFAULT NULL COMMENT '4s城市',
+    `prov` VARCHAR(64) NULL DEFAULT NULL COMMENT '4s省份'
+)
+COMMENT='4s店地址基本信息'
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;
+
+
+CREATE TABLE `car_city_4s` (
+    `car_id` VARCHAR(50) NULL DEFAULT NULL COMMENT '车款ID',
+    `city_id` VARCHAR(50) NULL DEFAULT NULL COMMENT '城市ID',
+    `4s_id` VARCHAR(50) NULL DEFAULT NULL COMMENT '4s店ID',
+    `is_same` VARCHAR(10) NULL DEFAULT NULL COMMENT '城市ID和4S店所在城市是否一致'
+)
+COMMENT='车款、城市和4s店的对应关系'
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;
+
+CREATE TABLE `city_list` (
+    `id` VARCHAR(50) NULL DEFAULT NULL COMMENT '城市ID',
+    `name` VARCHAR(50) NULL DEFAULT NULL COMMENT '城市中文名称',
+    `name_en` VARCHAR(50) NULL DEFAULT NULL COMMENT '城市英文名称',
+    `unkwn_id` VARCHAR(50) NULL DEFAULT NULL COMMENT '不知道是啥ID',
+    `prov_id` VARCHAR(50) NULL DEFAULT NULL COMMENT '城市所属省份ID',
+    `reg_id` VARCHAR(50) NULL DEFAULT NULL COMMENT '所属区域ID'
+)
+COMMENT='城市信息'
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+ROW_FORMAT=COMPACT
+;
+
+CREATE TABLE `model_car_info` (
+    `model_id` VARCHAR(50) NULL DEFAULT NULL COMMENT '车型ID',
+    `car_id` VARCHAR(50) NULL DEFAULT NULL COMMENT '车款ID',
+    `car_name` VARCHAR(256) NULL DEFAULT NULL COMMENT '车款名称',
+    `car_seo` VARCHAR(256) NULL DEFAULT NULL COMMENT '车款SEO关键词',
+    `is_op` VARCHAR(1) NULL DEFAULT '0' COMMENT '是否处理过,1:处理过;0:未处理'
+)
+COMMENT='车型车款信息表'
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;
+
+
