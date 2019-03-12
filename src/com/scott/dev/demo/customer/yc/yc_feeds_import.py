@@ -63,15 +63,65 @@ def config_logger():
 def saveFeed(account_id, feed_url):
     # 读取feed url生成索引文件地址
     parseAndSaveIndex(feed_url)
-    parseLocFile(os.path.join(PY_GEN_PATH, YC_FEED_LOC))
+    # parseLocFile(os.path.join(PY_GEN_PATH, YC_FEED_LOC))
 
 
-def parseLocFile(loc_file):
+def parseLocFile(loc_file, tag):
     with open(loc_file, 'r') as f:
         for line in f.readlines():
             line = line.strip()
-            if line:
+            if tag:
                 saveLoc(line)
+            else:
+                singleSave(line)
+
+
+def singleSave(loc_url):
+    logger.info("singleSave:" + loc_url)
+    param = []
+    file_name = loc_url.split("/")[-1]
+    file_abs_path = os.path.join(PY_GEN_PATH + os.path.sep, file_name)
+    insert_sql = "insert into yc_info(pid,name,image,url,murl,img_width,img_height,brand,category,sub_cat,third_cat,related_ids,cut_price,model_url,m_model_url,quote_price,leads_url,status,emission,origin,country,price_lowest,price_highest,runk_num)"
+    insert_sql = insert_sql + " values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    with open(file_abs_path, 'r', encoding='utf-8') as f:
+        idx_txt = f.read()
+        soup = BeautifulSoup(idx_txt, "lxml-xml")
+        products = soup.find("products")
+        prds = products.findAll("product")
+        for prd in prds:
+            pid = prd.find("id").text
+            name = prd.find("name").text
+            image = prd.find("image").text
+            landingPage = prd.find("landingPage").text
+            m_landingPage = prd.find("m_landingPage").text
+            imageWidth = prd.find("imageWidth").text
+            imageHeight = prd.find("imageHeight").text
+            brand = prd.find("brand").text
+            c1 = prd.find("category").text
+            c2 = prd.find("subCategory").text
+            c3 = prd.find("thirdCategory").text
+            competingModelsId = prd.find("competingModelsId").text
+            cutPrice = prd.find("cutPrice").text if(prd.find("cutPrice").text != '') else 'No-cutPrice'
+            cutPriceUrl = prd.find("cutPriceUrl").text
+            m_cutPriceUrl = prd.find("m_cutPriceUrl").text
+            quotedPrice = prd.find("quotedPrice").text
+            tijiaodealerUrl = prd.find("tijiaodealerUrl").text
+            saleStatus = prd.find("saleStatus").text
+            emission = prd.find("emission").text
+            origin = prd.find("origin").text
+            country = prd.find("country").text
+            priceLowest = prd.find("priceLowest").text
+            priceHighest = prd.find("priceHighest").text
+            runkNum = prd.find("runkNum").text
+            param.append([str(pid), str(name), str(image), str(landingPage) ,
+                          str(m_landingPage), str(imageWidth), str(imageHeight), str(brand),
+                          str(c1), str(c2), str(c3), str(competingModelsId),
+                          str(cutPrice), str(cutPriceUrl), str(m_cutPriceUrl), str(quotedPrice),
+                          str(tijiaodealerUrl), str(saleStatus), str(emission), str(origin),
+                          str(country), str(priceLowest), str(priceHighest), str(runkNum)]
+            )
+    insert_count = conn.insertmany(insert_sql, param)
+    logger.info("singleSave insert_count:" + str(insert_count))
 
 
 def saveLoc(loc_url):
@@ -176,6 +226,6 @@ if __name__ == '__main__':
     account_id = args.account
     feed_url = args.url
     
-    saveFeed(account_id, feed_url)
-    
+    # saveFeed(account_id, feed_url)
+    parseLocFile(os.path.join(PY_GEN_PATH, YC_FEED_LOC), False)
     conn.dispose(1)

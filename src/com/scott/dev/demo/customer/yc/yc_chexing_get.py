@@ -80,7 +80,7 @@ def parseLeadPage(model_id, leads_url, refer):
         name = a.find("img").get("alt")
         id = href.split("/")[-1]
         '''
-        regExsit = checkCarExist(model_id, car_id)
+        regExsit = checkSimilarModelExist(model_id, car_id)
         if regExsit:
             logger.error('model_id:{} | car_id:{} already exists'.format(str(model_id), str(car_id)))
         else:
@@ -95,9 +95,9 @@ def parseLeadPage(model_id, leads_url, refer):
         logger.error("parseLeadPage | param is null!")
 
 
-def checkCarExist(model_id, car_id):
-    logger.info("checkCarExist | model_id:{} | car_id:{}".format(str(model_id), str(car_id)))
-    select_sql = 'select model_id,car_id from model_car_info t where t.model_id= "{}" and t.car_id="{}"'.format(str(model_id), str(car_id))
+def checkSimilarModelExist(model_id, similar_id):
+    logger.info("checkSimilarModelExist | model_id:{} | similar_id:{}".format(str(model_id), str(similar_id)))
+    select_sql = 'select model_id,similar_id from model_car_info t where t.model_id= "{}" and t.similar_id="{}"'.format(str(model_id), str(similar_id))
     try:
         res = conn.queryone(select_sql)
         if res:
@@ -105,7 +105,7 @@ def checkCarExist(model_id, car_id):
         else:
             return False
     except Exception as e:
-        logger.error('checkCarExist exception' + e)
+        logger.error('checkSimilarModelExist exception' + e)
         return False
 
 
