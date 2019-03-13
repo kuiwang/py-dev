@@ -1,0 +1,10 @@
+CREATE TABLE `similar_model_info` (
+    `id` VARCHAR(50) NULL DEFAULT NULL COMMENT '车型ID',
+    `similar_id` VARCHAR(50) NULL DEFAULT NULL COMMENT '相似车型ID',
+    `similar_name` VARCHAR(50) NULL DEFAULT NULL COMMENT '相似车型名称',
+    `similar_url` VARCHAR(128) NULL DEFAULT NULL COMMENT '相似车型url'
+)
+COMMENT='相似车型信息'
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;

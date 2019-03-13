@@ -89,8 +89,28 @@ def parseCarModelPage(model_id, url):
     param = []
     html = get_url(url, url)
     soup = BeautifulSoup(html, "lxml")
-    div_lst = soup.find("body").find("div", attrs={'class':'container cartype-section summary'}).find('div', attrs={'class':'row section-layout'}).find('div', attrs={'class':'col-xs-3'}).findAll('div', attrs={'class':'section-right'})[1].find('div', attrs={'class':'layout-1 looking-sidebar'}).find('div', attrs={'id':'divSimilarSerial'})
-    dvlst = div_lst.findAll(name="div",attrs={"class":"img-info-layout-vertical"})
+    body = soup.find("body")
+    div_container = body.find("div", attrs={'class':'container cartype-section summary'})
+    div_row = div_container.find("div", attrs={"class":"row section-layout"})
+    div_col = div_row.findAll("div", attrs={"class":"col-xs-3"})
+    len_div_col = len(div_col)
+    if len_div_col > 1: 
+        div_col = div_col[2]
+    else:
+        div_col = div_col[0]
+    div_section_right = div_col.findAll("div", attrs={"class":"section-right"})
+    # logger.info("len section_right:" + str(len(div_section_right)))
+    len_section_right = len(div_section_right)
+    if len_section_right < 2:
+        logger.error("貌似这款车没有相似车型啊!model_id:{} | url:{}".format(str(model_id), url))
+        return
+    div_look_sidebar = div_section_right[1].find("div", attrs={"class":"layout-1 looking-sidebar"})
+    if div_look_sidebar is None:
+        logger.error("div_look_sidebar is null | model_id:{} | url:{} 没有相似车型".format(str(model_id), url))
+        return 
+    div_similar = div_look_sidebar.find("div", attrs={"id":"divSimilarSerial"})
+    
+    dvlst = div_similar.findAll(name="div", attrs={"class":"img-info-layout-vertical"})
     for div in dvlst:
         itemLst = div.find("ul", attrs={"class":'p-list'}).findAll("li")
         similar_url = MODEL_PREFIX + itemLst[0].find('a').get("href")

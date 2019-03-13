@@ -4,7 +4,7 @@ Created on 2018年12月14日
 
 @author: user
 '''
-import os, sys, json
+import os, sys
 import logging
 import requests
 from com.scott.dev.util.mysqlpool import MySQLConnPool
@@ -121,6 +121,7 @@ def singleSave(loc_url):
                           str(country), str(priceLowest), str(priceHighest), str(runkNum)]
             )
     insert_count = conn.insertmany(insert_sql, param)
+    conn.end('commit')
     logger.info("singleSave insert_count:" + str(insert_count))
 
 
