@@ -59,8 +59,7 @@ def config_logger():
 
 
 def getCarModel():
-    logger.info("getCarModel start")
-    select_sql = 'select pid,url,leads_url from yc_info t where instr(t.pid,"-")=0 order by pid '
+  getSimilarCarModelfo("getCarModel startgetSimilarCarModelct_sql = 'select pid,url,leads_url from yc_info t where instr(t.pid,"-")=0 order by pid '
     return conn.queryall(select_sql)
 
 
@@ -112,7 +111,7 @@ def checkSimilarModelExist(model_id, similar_id):
 def saveCarInfo():
     logger.info("saveCarInfo start")
     model_lst = getCarModel()
-    size = len(model_lst)
+   getSimilarCarModel(model_lst)
     logger.info("size:{}".format(size))
     for i in range(size):
         # logger.info('model[{}] = {}'.format(str(i),str(''.join(model_lst[i]))))
