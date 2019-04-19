@@ -12,7 +12,6 @@ import requests
 from com.scott.dev.util.mysqlpool import MySQLConnPool
 from importlib import reload
 from urllib.parse import quote, unquote, urlencode
-from com.scott.dev.bigdata.feeds.issue.util.test_function import datetime_test
 import threading
 
 reload(sys)  

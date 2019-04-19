@@ -45,7 +45,8 @@ def all_view(data_train):
     plt.title(u"乘客等级分布")
     
     plt.subplot2grid((2,3),(0,2))
-    plt.scatter(data_train.Survived, data_train.Age)
+    #plt.scatter(data_train.Survived, data_train.Age)
+    plt.scatter(data_train.Age, data_train.Survived)
     plt.ylabel(u"年龄")                         # 设定纵坐标名称
     plt.grid(b=True, which='major', axis='y')
     plt.title(u"按年龄看获救分布 (1为获救)")
@@ -146,6 +147,6 @@ def arrival_survived(data_train):
 if __name__ == '__main__':
     data_train = train_info()
     all_view(data_train)
-    passenger_level(data_train)
-    passenger_gender(data_train)
-    passenger_cang(data_train)
+#     passenger_level(data_train)
+#     passenger_gender(data_train)
+#     passenger_cang(data_train)
