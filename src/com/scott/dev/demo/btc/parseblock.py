@@ -9,6 +9,7 @@ import logging
 from importlib import reload
 from blockchain_parser.blockchain import Blockchain, get_files, get_blocks
 from blockchain_parser.block import Block
+import json
 
 reload(sys)  
 # sys.setdefaultencoding('utf8')
@@ -41,17 +42,25 @@ def config_logger():
 def test_parse_blk():
     start = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
     logger.info('start at:{}'.format(str(start)))
-    blk_path = 'E:/data/bc/data/blocks/'
+    blk_path = 'C:/Users/user/AppData/Roaming/Bitcoin/blocks/'
     blk_name = 'blk00000.dat'
     blk_path = os.path.join(blk_path, blk_name)
-    # logger.info('blkpath:{}'.format(blk_path))
+    logger.info('blkpath:{}'.format(blk_path))
     blk = get_blocks(blk_path)
+    # logger.info('blk size:{}'.format(str(len(blk))))
+    block_num = 0
     for raw_block in blk:
+        block_num = block_num + 1
+        logger.info("block_num:{}".format(str(block_num)))
         block = Block(raw_block)
-        for tx in block.transactions:
-            enums = enumerate(tx.outputs)
-            for no, output in enums:
-                logger.info('tx:{} | output_no={} | type={} | value={}'.format(str(tx.hash), str(no), str(output.type), str(output.value)))
+        # logger.info(block.__dict__)
+        transactions_lst = block.transactions
+        logger.info('transactions_lst size:{}'.format(str(len(transactions_lst))))
+        for tx in transactions_lst:
+            logger.info(tx.__dict__)
+#            enums = enumerate(tx.outputs)
+#             for no, output in enums:
+#                 logger.info('tx:{} | output_no={} | type={} | value={}'.format(str(tx.hash), str(no), str(output.type), str(output.value)))
     end = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
     logger.info('end at:{}'.format(str(end)))
 

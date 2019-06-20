@@ -1,0 +1,22 @@
+create database btc default charset utf8mb4 collate utf8mb4_general_ci ;
+
+CREATE TABLE `btc_top_analytics` (
+    `num` VARCHAR(50) NOT NULL COMMENT '排行数',
+    `addr` VARCHAR(128) NOT NULL COMMENT '地址',
+    `sig_type` VARCHAR(50) NULL DEFAULT NULL COMMENT '多重认证方式',
+    `wallet_type` VARCHAR(50) NULL DEFAULT NULL COMMENT '钱包类型',
+    `balance` VARCHAR(128) NULL DEFAULT NULL COMMENT '余额原始字符串',
+    `balance_btc` VARCHAR(50) NULL DEFAULT NULL COMMENT 'btc余额',
+    `balance_usd` VARCHAR(50) NULL DEFAULT NULL COMMENT 'usd余额',
+    `btc_rate` VARCHAR(50) NULL DEFAULT NULL COMMENT '拥有btc占比',
+    `first_in` VARCHAR(50) NULL DEFAULT NULL COMMENT '首次输入',
+    `last_in` VARCHAR(50) NULL DEFAULT NULL COMMENT '最近输入',
+    `num_in` VARCHAR(50) NULL DEFAULT NULL COMMENT '输入数',
+    `first_out` VARCHAR(50) NULL DEFAULT NULL COMMENT '首次输出',
+    `last_out` VARCHAR(50) NULL DEFAULT NULL COMMENT '最近输出',
+    `num_out` VARCHAR(50) NULL DEFAULT NULL COMMENT '输出数'
+)
+ENGINE=InnoDB
+;
+
+
