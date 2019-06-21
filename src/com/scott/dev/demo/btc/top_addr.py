@@ -55,7 +55,8 @@ def get_url(url, refer):
         HOST = "bitinfocharts.com"
         header = {"HOST":HOST, "METHOD":"GET", "User-Agent":UA_LST[random.randrange(0, len(UA_LST))], 'Cache-Control':'no-cache', 'Referer':refer, "Accept":ACCEPT, "Accept-Encoding":ACCEPT_ENCODING, "Accept-Language":ACCEPT_LANGUAGE, "Connection":CONNECTION}
         r = s.get(url, headers=header)
-        if r.status_code == 200:
+        sc = r.status_code
+        if sc == 200:
             r.encoding = 'utf-8'
             '''
             logger.info('headers in below:\n')
@@ -73,6 +74,9 @@ def get_url(url, refer):
                 return data1
             # logger.info('r.text:\n' + r.text)
             # return r.text
+        else:
+            logger.error('response code:{}'.format(str(sc)))
+            return None
     except Exception as e:
         logger.error(e)
         return None
@@ -101,15 +105,18 @@ def parseBtcAnalyticsPage(url):
     param = []
     insert_sql = 'insert into btc_top_analytics values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
     html = get_url(url, url)
+    if html is None:
+        logger.error('response is null')
+        return
     soup = BeautifulSoup(html, "lxml")
     body = soup.find("body")
     # div_lst = body.findAll('div', attrs={"align":"center"})
     tblOne = body.find("table", attrs={"id":"tblOne"})
     tr_lst = tblOne.find("tbody").findAll("tr")
     tblOne2 = body.find("table", attrs={"id":"tblOne2"})
-    #logger.info(tblOne2)
+    # logger.info(tblOne2)
     tr_lst2 = tblOne2.findAll("tr")
-    #logger.info(tr_lst2)
+    # logger.info(tr_lst2)
     for tr in tr_lst:
         td_lst = tr.findAll("td")
         len_td = len(td_lst)

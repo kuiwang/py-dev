@@ -53,14 +53,14 @@ def test_parse_blk():
         block_num = block_num + 1
         logger.info("block_num:{}".format(str(block_num)))
         block = Block(raw_block)
-        # logger.info(block.__dict__)
+        logger.info(block.__dict__)
         transactions_lst = block.transactions
         logger.info('transactions_lst size:{}'.format(str(len(transactions_lst))))
         for tx in transactions_lst:
-            logger.info(tx.__dict__)
-#            enums = enumerate(tx.outputs)
-#             for no, output in enums:
-#                 logger.info('tx:{} | output_no={} | type={} | value={}'.format(str(tx.hash), str(no), str(output.type), str(output.value)))
+            #logger.info(tx.__dict__)
+            enums = enumerate(tx.outputs)
+            for no, output in enums:
+                logger.info('tx:{} | output_no={} | type={} | value={}'.format(str(tx.hash), str(no), str(output.type), str(output.value)))
     end = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
     logger.info('end at:{}'.format(str(end)))
 
