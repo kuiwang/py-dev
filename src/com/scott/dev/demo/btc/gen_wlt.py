@@ -136,6 +136,7 @@ def Permutation(ss):
 
 
 def checkRandKeyExists(rand_key):
+    '''
     select_sql = 'select rand_key from gen_addr t where t.rand_key= "{}"'.format(str(rand_key))
     try:
         res = conn.queryone(select_sql)
@@ -146,6 +147,8 @@ def checkRandKeyExists(rand_key):
     except Exception as e:
         logger.error('checkRandKeyExists exception' + e)
         return False
+    '''
+    return False
 
 
 def perm(s=''):
@@ -153,9 +156,14 @@ def perm(s=''):
     if len(s) <= 1:
         return [s]
     sl = []
+    # logger.info('length:{}'.format(str(len(s))))
     for i in range(len(s)):
         for j in perm(s[0:i] + s[i + 1:]):
             sl.append(s[i] + j)
+            size = len(sl)
+            if(size % 1000000 == 0):
+                savePermutation(sl)
+                sl = []
     return sl
 
 
@@ -167,22 +175,20 @@ def savePermutation(lst):
     for n in lst:
         isRandExist = checkRandKeyExists(n)
         num = 0
-        if not isRandExist:
+        len_n = len(n)
+        if ((not isRandExist) and (len_n >= 35)):
             num = num + 1 
             param.append([str(n)])
-            if (num % 10000) == 0:
-                times = num / 10000
+            if (num % 1000000 == 0):
+                times = num / 1000000
                 insert_gen_count = conn.insertmany(insert_gen_sql, param)
                 conn.end('commit')
-                logger.info('times:{} save savePermutation successful! count:{}'.format(str(times), str(insert_gen_count)))
+                logger.info('times:{} savePermutation successful! count:{}'.format(str(times), str(insert_gen_count)))
                 param = []
-            
-        else:
-            logger.error('random key:{} exists !!!'.format(str(n)))
     if len(param) > 0:
         insert_gen_count = conn.insertmany(insert_gen_sql, param)
         conn.end('commit')
-        logger.info('save savePermutation successful at last! count:{}'.format(str(insert_gen_count)))
+        logger.info('savePermutation successful at last! count:{}'.format(str(insert_gen_count)))
 
 
 def gen_random():
@@ -314,6 +320,7 @@ if __name__ == '__main__':
     # gen_wallet1()
     lst = perm(KEY_ALPHA)
     savePermutation(lst)
-    # gen_noraml_list()
+#     # gen_noraml_list()
     # gen_random()
     # pcurve_dev()
+    conn.dispose(1)
