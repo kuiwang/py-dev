@@ -10,7 +10,6 @@ from importlib import reload
 from com.scott.dev.util.mysqlpool import MySQLConnPool
 import bitcoin, random
 import requests, json
-from multiprocessing import Process
 
 reload(sys)
 # sys.setdefaultencoding('utf8')
@@ -213,7 +212,6 @@ def saveWlt(num):
     error_param = []
     # insert_gen_sql = 'insert into gen_wallet_(rand_key,priv_key,priv_key_type,addr) values(%s,%s,%s,%s)'
     # m = 0
-    # num = int(num)
     for i in range(1, num + 1):
         # logger.info("i = {}".format(str(i)))
         address_give = get_address()
@@ -233,7 +231,7 @@ def saveWlt(num):
             param.append([str(rand_key), str(wif_compressed_private_key), 'wif_compressed', compress_addr, priv_key_hex, compress_pub])
             insert_gen_count1 = conn.insertmany(insert_gen_sql, param)
             conn.end('commit')
-            # logger.info('i={}'.format(str(i)))
+            # logger.info('count:{} | i = {}'.format(str(insert_gen_count1), str(i)))
             param = []
         except Exception as e:
             error_param.append([str(rand_key), str(wif_encoded_private_key), 'wif_normal', normal_addr, priv_key_hex, uncompress_pub, str(tbl_idx)])
@@ -282,11 +280,10 @@ def btc_ad_save():
 '''
 
 if __name__ == '__main__':
-    processlist = []
     conn = MySQLConnPool('btc_new')
     config_logger()
     
-    saveWlt(100000)
+    saveWlt(1000000)
     # get_address()
     
     conn.dispose(1)

@@ -1,4 +1,4 @@
-create database btc default charset utf8mb4 collate utf8mb4_general_ci ;
+create database btc_new default charset utf8mb4 collate utf8mb4_general_ci ;
 
 CREATE TABLE `btc_top_analytics` (
     `num` VARCHAR(50) NOT NULL COMMENT '排行数',
@@ -47,7 +47,7 @@ BEGIN  DECLARE `@i` int(11);
 
 
         set `@i`=0;
-        WHILE  `@i`< 100 DO
+        WHILE  `@i`< 1000 DO
              -- 创建表
              set @dropSql = concat('drop table if exists gen_wallet_',`@i`,';');
              SET @createSql = CONCAT('CREATE TABLE if not exists gen_wallet_',`@i`,'(
@@ -94,4 +94,29 @@ BEGIN  DECLARE `@i` int(11);
             SET `@i`= `@i`+1; 
         END WHILE;
 END
+
+#install zip mysql
+1).mysqld  --defaults-file=E:/mysql/my.ini
+2).mysqld --initialize-insecure --user=mysql
+3).修改 my.ini文件删除最后一句skip-grant-tables
+
+
+#error info table:
+CREATE TABLE `error_info` (
+    `rand_key` VARCHAR(64) NULL DEFAULT NULL,
+    `priv_key` VARCHAR(128) NULL DEFAULT NULL,
+    `priv_key_type` VARCHAR(128) NULL DEFAULT NULL,
+    `addr` VARCHAR(64) NULL DEFAULT NULL,
+    `priv_key_hex` VARCHAR(128) NULL DEFAULT NULL,
+    `pub_key` VARCHAR(256) NULL DEFAULT NULL,
+    `tbl_idx` int(10) null default null,
+    `save_time` datetime null default null,
+    UNIQUE INDEX `uniq_key` (`priv_key`, `addr`),
+    INDEX `idx_addr` (`addr`),
+    INDEX `idx_priv` (`priv_key`),
+    INDEX `idx_rand` (`rand_key`)
+)
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;
 
