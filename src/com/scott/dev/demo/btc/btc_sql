@@ -56,6 +56,7 @@ BEGIN  DECLARE `@i` int(11);
                     `priv_key_type` VARCHAR(128) NULL DEFAULT NULL,
                     `addr` VARCHAR(64) NULL DEFAULT NULL,
                     `priv_key_hex` VARCHAR(128) NULL DEFAULT NULL,
+                    `pub_key` VARCHAR(256) NULL DEFAULT NULL,
                     UNIQUE INDEX `uniq_key` (`priv_key`, `addr`),
                     INDEX `idx_addr` (`addr`),
                     INDEX `idx_priv` (`priv_key`),

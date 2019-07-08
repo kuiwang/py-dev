@@ -232,7 +232,7 @@ def saveBtcAddrAnalyticsInfo():
 
 
 if __name__ == '__main__':
-    conn = MySQLConnPool('btc')
+    conn = MySQLConnPool('btc_new')
     config_logger()
     
     saveBtcAddrAnalyticsInfo()
