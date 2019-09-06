@@ -44,8 +44,10 @@ def post_url(url, send_data):
         r = s.post(url, data=send_data, headers=header)
         status = r.status_code
         if status == 200:
+            txt = r.text
+            logger.info("response:" + txt)
             return r.content
-        # logger.info("response:" + txt)
+        
     except Exception as e:
         return ""
         logger.error(e)
@@ -91,32 +93,32 @@ def smtData(url, account, filename):
             i = i + 1
             usr_info = {"idtype":"apihash", "uid":cont, "data":{"type":"self"}}
             items.append(usr_info)
+            times = 0
             if(i % 100 == 0):
+                times = times + 1
                 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                m2.update(str(account) + str(now) + str(API_KEY))
-                sign = m2.hexdigest()
+                # m2.update(str(account) + str(now) + str(API_KEY))
+                # sign = m2.hexdigest()
                 post_body = {
                     "aid":account,
                     "time":now,
-                    "sign":sign,
                     "items":items
                 }
                 json_post_body = json.dumps(post_body).encode("utf-8")
                 items = []
-                # post_url(url, json_post_body)
-                logger.info("第" + str(i / 100) + "次: 已处理" + str(i) + "条 |" + str(account) + " | " + str(now) + " | " + sign + " |post data:" + str(json_post_body))
+                post_url(url, json_post_body)
+                logger.info("第" + str(times) + "次: 已处理" + str(i) + "条 |" + str(account) + " | " + str(now) + " | post data:" + str(json_post_body))
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        m2.update(str(account) + str(now) + str(API_KEY))
-        sign = m2.hexdigest()
+        # m2.update(str(account) + str(now) + str(API_KEY))
+        # sign = m2.hexdigest()
         post_body = {
             "aid":account,
             "time":now,
-            "sign":sign,
             "items":items
         }
         json_post_body = json.dumps(post_body).encode("utf-8")
-        logger.info("第" + str(i / 100) + "次: 已处理" + str(i) + "条 |" + str(account) + " | " + str(now) + " | " + sign + " |post data:" + str(json_post_body))
-        # post_url(api, post_data)
+        logger.info("第" + str(times + 1) + "次: 已处理" + str(i) + "条 |" + str(account) + " | " + str(now) + " | post data:" + str(json_post_body))
+        post_url(url, json_post_body)
 
 
 if __name__ == '__main__':

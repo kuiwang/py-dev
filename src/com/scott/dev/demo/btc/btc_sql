@@ -121,3 +121,9 @@ COLLATE='utf8mb4_general_ci'
 ENGINE=InnoDB
 ;
 
+#create ip node
+select  
+concat('addnode ',substr(substr(ip,instr(ip,'ss151_')+length('ss151_'),length(ip) ) ,1,instr(substr(ip,instr(ip,'ss151_')+length('ss151_'),length(ip) ) ,':')-1) ,' add') as ip2 
+from btc_node  t 
+where t.ip like 'ss151_%' and ip not like '%[%'
+

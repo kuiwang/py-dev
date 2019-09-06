@@ -10,17 +10,19 @@ from importlib import reload
 from com.scott.dev.util.mysqlpool import MySQLConnPool
 import bitcoin, random
 import requests, json
-from multiprocessing import Process
+from bitcoinutils.setup import setup
+from bitcoinutils.script import Script
+from bitcoinutils.keys import P2wpkhAddress, P2wshAddress, P2shAddress, PrivateKey, PublicKey
 
 reload(sys)
 # sys.setdefaultencoding('utf8')
-
+NETWORK = 'mainnet'
 PY_GEN_PATH = "D:/download/pygen/bitauto".replace('/', os.sep)
-TABLE_NUM = 1000
+TABLE_NUM = 100
 logger = logging.getLogger('walt_gen')
 LOG_FILE = 'walt_gen.log'
-# LOG_FORMATTER = '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)d - %(message)s'
-LOG_FORMATTER = '%(asctime)s - %(filename)s - %(lineno)d - %(message)s'
+LOG_FORMATTER = '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)d - %(message)s'
+
 s = requests.Session()
 
 
@@ -82,22 +84,20 @@ def get_address():
     valid_private_key = False
     while not valid_private_key:
         private_key = bitcoin.random_key()
-        private_key = "0000000000000000000000000000000000000000000000000000000000000001"
         # logger.info('random_info:{} | length:{}'.format(private_key, str(len(private_key))))
-        # decoded_private_key = bitcoin.decode_privkey(private_key, 'hex')
         decoded_private_key = bitcoin.decode_privkey(private_key, 'hex')
         # logger.info("decoded_private_key:{}".format(decoded_private_key))
         valid_private_key = 0 < decoded_private_key < bitcoin.N
-        
+
         # 将私钥转换为WIF格式
         wif_enc_priv = bitcoin.encode_privkey(decoded_private_key, 'wif')
         # logger.info('wif_encoded_private_key:{}'.format(wif_enc_priv))
         # time.sleep(1 / 5)
-        
+
         dec_enc_priv = bitcoin.encode_privkey(decoded_private_key, 'decimal')
         bin_enc_priv = bitcoin.encode_privkey(decoded_private_key, 'bin')
         bin_compress_enc_priv = bitcoin.encode_privkey(decoded_private_key, 'bin_compressed')
-        
+
         # hex_encoded_priv == private_key
         # hex_encoded_priv = bitcoin.encode_privkey(decoded_private_key, 'hex')
         hex_compress_enc_priv = bitcoin.encode_privkey(decoded_private_key, 'hex_compressed')
@@ -127,7 +127,7 @@ def get_address():
         # 编码为十六进制，前缀为04
         hex_encoded_public_key = bitcoin.encode_pubkey(public_key, 'hex')  # uncompressed public key
         # logger.info('hex_encoded_public_key:{}'.format(hex_encoded_public_key))
-        
+
         decimal_enc_pub = bitcoin.encode_pubkey(public_key, 'decimal')
         bin_enc_public_key = bitcoin.encode_pubkey(public_key, 'bin')
         bin_compress_encoded_pub = bitcoin.encode_pubkey(public_key, 'bin_compressed')
@@ -142,7 +142,7 @@ def get_address():
         logger.info('bin_electrum_encoded_public_key:{} | len:{}'.format(bin_electrum_enc_pub, str(len(bin_electrum_enc_pub))))
         logger.info('hex_electrum_encoded_public_key:{} | len:{}'.format(hex_electrum_enc_pub, str(len(hex_electrum_enc_pub))))
         '''
-        
+
         # 压缩公钥，根据y是偶数还是奇数调整前缀
         (public_key_x, public_key_y) = public_key
         # logger.info('public_key:{}'.format(str(public_key)))
@@ -154,28 +154,28 @@ def get_address():
         else:
             compressed_prefix = '03'
             # time.sleep(1 / 5)
-        
+
         # 压缩后的公钥  compressed_public_key
-        # hex_compress_pub == hex_compress_encoded_pub 
+        # hex_compress_pub == hex_compress_encoded_pub
         hex_compress_pub = compressed_prefix + bitcoin.encode(public_key_x, 16)
         # logger.info('hex_compressed_public_key:{}'.format(hex_compress_pub))
 
         # 从公钥生成比特币地址
         # time.sleep(1 / 5)
         normal_addr = bitcoin.pubkey_to_address(public_key)
-        
+        '''
         logger.info("decimal addr:".format(bitcoin.pubkey_to_address(decimal_enc_pub)))
         logger.info("bin addr:".format(bitcoin.pubkey_to_address(str(bin_enc_public_key).encode('utf-8'))))
         logger.info("bin_compressed addr:".format(bitcoin.pubkey_to_address(bin_compress_encoded_pub)))
         logger.info("bin_electrum addr:".format(bitcoin.pubkey_to_address(str(bin_electrum_enc_pub).encode('utf_8'))))
         logger.info("hex_electrum addr:".format(bitcoin.pubkey_to_address(hex_electrum_enc_pub.encode('utf_8'))))
         logger.info('uncompressed_address:{}'.format(normal_addr))
-        
+        '''
         # 从压缩公钥生成压缩比特币地址
         # time.sleep(1 / 5)
         compress_addr = bitcoin.pubkey_to_address(hex_compress_pub.encode('utf-8'))
         # logger.info('compress_addr:{}'.format(compress_addr))
-        
+
         return wif_enc_priv, normal_addr, wif_compressed_priv, compress_addr, private_key, hex_encoded_public_key, hex_compress_pub
 
 
@@ -191,7 +191,7 @@ def web_get_accountinfo(bitcoin_address):
             logger.info('connect error,retry...', e)
             time.sleep(5)
     r_json = json.loads(r)
-    
+
     return r_json
 
 
@@ -219,7 +219,7 @@ def saveWlt(num):
     for i in range(1, num + 1):
         # logger.info("i = {}".format(str(i)))
         address_give = get_address()
-        wif_encoded_private_key = address_give[0] 
+        wif_encoded_private_key = address_give[0]
         normal_addr = address_give[1]
         wif_compressed_private_key = address_give[2]
         compress_addr = address_give[3]
@@ -235,8 +235,7 @@ def saveWlt(num):
             param.append([str(rand_key), str(wif_compressed_private_key), 'wif_compressed', compress_addr, priv_key_hex, compress_pub])
             insert_gen_count1 = conn.insertmany(insert_gen_sql, param)
             conn.end('commit')
-            # logger.info('i={} | count:{}'.format(str(i), str(insert_gen_count1)))
-            logger.info('i={}'.format(str(i)))
+            # logger.info('i={}'.format(str(i)))
             param = []
         except Exception as e:
             error_param.append([str(rand_key), str(wif_encoded_private_key), 'wif_normal', normal_addr, priv_key_hex, uncompress_pub, str(tbl_idx)])
@@ -257,39 +256,144 @@ def saveWlt(num):
                 #logger.info('saveWlt count:{} | i = {}'.format(str(insert_gen_count1), str(i)))
                 param = []
         '''
-        
+
     if len(param) > 0:
         insert_gen_count = conn.insertmany(insert_gen_sql, param)
         conn.end('commit')
         logger.info('saveWlt successful at last! count:{}'.format(str(insert_gen_count)))
     logger.info("saveWlt end at: {} ".format(time.ctime()))
 
-'''
-def btc_ad_save():
-    # 输入地址及私钥信息
-    address_give = get_address()
 
-    logger.info("WIF格式私钥:{}".format(address_give[2]))
-    time.sleep(1 / 5)
-    account1 = web_get_accountinfo(address_give[0])
-    logger.info("对应地址:{} | 帐户信息{}".format(address_give[0] , account1))
+def main1():
+    # https://www.chainnode.com/post/321277
+    # https://github.com/karask/python-bitcoin-utils/blob/master/examples/keys_segwit_addresses.py
+    # always remember to setup the network
+    setup('mainnet')
 
-    time.sleep(1 / 5)
-    logger.info("WIF格式压缩私钥:", address_give[3])
-    time.sleep(1 / 5)
-    account2 = web_get_accountinfo(address_give[1])
-    logger.info("对应地址：{} | 帐户信息:{}".format({address_give[1]}, account2))
-    time.sleep(1 / 5)
+    # could also instantiate from existing WIF key
+    NORMAL_PRIV_KEY = '5Ht4YdBJEFNvcpZjZxTQ4cD2rX6HwTL7UhoA9TBDcAiV2kPfmcQ'
+    priv = PrivateKey.from_wif(NORMAL_PRIV_KEY)
 
-    return address_give
-'''
+    # compressed is the default
+    # print("compressed_Private key WIF:", priv.to_wif(compressed=True))
+    # print("uncompressed_Private key WIF:", priv.to_wif(compressed=False))
+
+    # get the public key
+    pub = priv.get_public_key()
+
+    # compressed is the default
+    # print("compressed_Public key:", pub.to_hex(compressed=True))
+    # print("uncompress_Public key:", pub.to_hex(compressed=False))
+    # get address from public key
+    uncompressed_addr = pub.get_address(compressed=False)  # wif_normal address
+    compressed_addr = pub.get_address(compressed=True)  # wif_compressed address
+    print('uncompress_addr:', uncompressed_addr.to_address())
+    print('compressed_addr:', compressed_addr.to_address())
+    address = pub.get_segwit_address()
+
+    # print the address and hash - default is compressed address
+    print("P2WPKH_Address:", address.to_address())
+    segwit_hash = address.to_hash()
+    print("Segwit_Hash:", segwit_hash)
+
+    # test to_address
+    addr2 = P2wpkhAddress.from_hash(segwit_hash)
+    print("Created P2wpkhAddress from Segwit Hash and calculate address:")
+    print("P2WPKH_Address_2:", addr2.to_address())
+    print(address.to_address() == addr2.to_address())
+
+    #
+    # display P2SH-P2WPKH
+    #
+
+    # create segwit address
+    addr3 = PrivateKey.from_wif(NORMAL_PRIV_KEY).get_public_key().get_segwit_address()
+    print('addr3:', addr3.to_address())
+    # wrap in P2SH address
+    addr4 = P2shAddress.from_script(addr3.to_script_pub_key())
+    print("addr4 P2SH(P2WPKH):", addr4.to_address())
+
+    #
+    # display P2WSH
+    #
+    p2wpkh_key = PrivateKey.from_wif(NORMAL_PRIV_KEY)
+    script = Script(['OP_1', p2wpkh_key.get_public_key().to_hex(), 'OP_1', 'OP_CHECKMULTISIG'])
+    p2wsh_addr = P2wshAddress.from_script(script)
+    print("P2WSH of P2PK:", p2wsh_addr.to_address())
+
+    #
+    # display P2SH-P2WSH
+    #
+    p2sh_p2wsh_addr = P2shAddress.from_script(p2wsh_addr.to_script_pub_key())
+    print("P2SH(P2WSH of P2PK):", p2sh_p2wsh_addr.to_address())
+
+
+def main():
+    # always remember to setup the network
+    setup('mainnet')
+
+    # could also instantiate from existing WIF key
+    priv = PrivateKey.from_wif('5Ht4YdBJEFNvcpZjZxTQ4cD2rX6HwTL7UhoA9TBDcAiV2kPfmcQ')
+
+    # compressed is the default
+    print("\nPrivate key WIF:", priv.to_wif(compressed=True))
+
+    # get the public key
+    pub = priv.get_public_key()
+
+    # compressed is the default
+    print("Public key:", pub.to_hex(compressed=True))
+
+    # get address from public key
+    address = pub.get_segwit_address()
+
+    # print the address and hash - default is compressed address
+    print("Native Address:", address.to_address())
+    segwit_hash = address.to_hash()
+    print("Segwit Hash:", segwit_hash)
+
+    # test to_address
+    addr2 = P2wpkhAddress.from_hash(segwit_hash)
+    print("Created P2wpkhAddress from Segwit Hash and calculate address:")
+    print("Native Address:", addr2.to_address())
+
+    #
+    # display P2SH-P2WPKH
+    #
+
+    # create segwit address
+    pub3=PrivateKey.from_wif('5Ht4YdBJEFNvcpZjZxTQ4cD2rX6HwTL7UhoA9TBDcAiV2kPfmcQ').get_public_key()
+    print('pub3 address:',pub3.get_address(compressed=True).to_address())
+    addr3 = pub3.get_segwit_address()
+    print('address3:',addr3.to_address())
+    # wrap in P2SH address
+    addr4 = P2shAddress.from_script(addr3.to_script_pub_key())
+    print("P2SH(P2WPKH) addr4:", addr4.to_address())
+
+    #
+    # display P2WSH
+    #
+    p2wpkh_key = PrivateKey.from_wif('5Ht4YdBJEFNvcpZjZxTQ4cD2rX6HwTL7UhoA9TBDcAiV2kPfmcQ')
+    print('p2wpkh_key:',p2wpkh_key)
+    script = Script(['OP_1', p2wpkh_key.get_public_key().to_hex(), 'OP_1', 'OP_CHECKMULTISIG'])
+    p2wsh_addr = P2wshAddress.from_script(script)
+    print("P2WSH of P2PK p2wsh_addr:", p2wsh_addr.to_address())
+
+    #
+    # display P2SH-P2WSH
+    #
+    p2sh_p2wsh_addr = P2shAddress.from_script(p2wsh_addr.to_script_pub_key())
+    print("P2SH(P2WSH of P2PK) p2sh_p2wsh_addr:", p2sh_p2wsh_addr.to_address())
+
 
 if __name__ == '__main__':
+    '''
     processlist = []
-    #conn = MySQLConnPool('btc_new')
+    conn = MySQLConnPool('btc_new')
     config_logger()
-    
-    #saveWlt(1)
-    get_address()
-    
-    #conn.dispose(1)
+
+    saveWlt(100000)
+
+    conn.dispose(1)
+    '''
+    main()

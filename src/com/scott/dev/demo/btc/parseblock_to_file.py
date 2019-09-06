@@ -6,21 +6,20 @@ Created on 2018年12月14日
 '''
 import os, sys, datetime, time
 import logging, json
-from importlib import reload
-from com.scott.dev.util.mysqlpool import MySQLConnPool
+# from importlib import reload
 from blockchain_parser.blockchain import Blockchain, get_files, get_blocks
 from blockchain_parser.block import Block
   
 # 58 character alphabet used
 
-reload(sys)  
+# reload(sys)  
 # sys.setdefaultencoding('utf8')
 
-PY_GEN_PATH = "D:/download/pygen/bitauto".replace('/', os.sep)
-
-logger = logging.getLogger('parse_block')
-LOG_FILE = 'parse_block.log'
-LOG_FORMATTER = '%(asctime)s-%(levelname)s - %(filename)s - %(funcName)s - %(lineno)d - %(message)s'
+PY_GEN_PATH = "E:/data/priv".replace('/', os.sep)
+logger = logging.getLogger('parseblock2file')
+LOG_FILE = 'parse_block2file.log'
+# LOG_FORMATTER = '%(asctime)s-%(levelname)s - %(filename)s - %(funcName)s - %(lineno)d - %(message)s'
+LOG_FORMATTER = '%(message)s'
 
 
 def config_logger():
@@ -52,57 +51,16 @@ def get_blk_files(path):
     return sorted(files)
 
 
-def checkRandAndPrivExists(rand_key, priv_key, addr, tbl):
-    select_sql = 'select rand_key from gen_wallet_{} t where t.rand_key= "{}" and priv_key="{}" and addr="{}"'.format(str(tbl), str(rand_key), str(priv_key), str(addr))
-    try:
-        res = conn.queryone(select_sql)
-        if res:
-            return True
-        else:
-            return False
-    except Exception as e:
-        logger.error('checkRandKeyExists exception' + e)
-        return False
-
-
-# generate walt
-def saveBlock(num):
-    logger.info("saveWlt start at: {}".format(time.ctime()))
-    param = []
-    error_param = []
-    # insert_gen_sql = 'insert into gen_wallet_(rand_key,priv_key,priv_key_type,addr) values(%s,%s,%s,%s)'
-    for i in range(1, num + 1):
-        insert_gen_sql = 'insert into gen_wallet_' + str(tbl_idx) + '(rand_key,priv_key,priv_key_type,addr,priv_key_hex,pub_key) values(%s,%s,%s,%s,%s,%s)'
-        insert_err_sql = 'insert into error_info(rand_key,priv_key,priv_key_type,addr,priv_key_hex,pub_key,tbl_idx,save_time) values(%s,%s,%s,%s,%s,%s,%s,now())'
-        try:
-            param.append([str(rand_key), str(wif_encoded_private_key), 'wif_normal', normal_addr, priv_key_hex, uncompress_pub])
-            param.append([str(rand_key), str(wif_compressed_private_key), 'wif_compressed', compress_addr, priv_key_hex, compress_pub])
-            insert_gen_count1 = conn.insertmany(insert_gen_sql, param)
-            conn.end('commit')
-            # logger.info('i={}'.format(str(i)))
-            param = []
-        except Exception as e:
-            error_param.append([str(rand_key), str(wif_encoded_private_key), 'wif_normal', normal_addr, priv_key_hex, uncompress_pub, str(tbl_idx)])
-            error_param.append([str(rand_key), str(wif_compressed_private_key), 'wif_compressed', compress_addr, priv_key_hex, compress_pub, str(tbl_idx)])
-            error_count = conn.insertmany(insert_err_sql, error_param)
-            logger.error(e)
-            logger.error('error count:{} | rand_key:{} | table:{}'.format(str(error_count), str(rand_key), str(tbl_idx)))
-            conn.end('commit')
-            error_param = []
-        
-    if len(param) > 0:
-        insert_gen_count = conn.insertmany(insert_gen_sql, param)
-        conn.end('commit')
-        logger.info('saveWlt successful at last! count:{}'.format(str(insert_gen_count)))
-    logger.info("saveWlt end at: {} ".format(time.ctime()))
-
-
 def test_parse_blk():
     start = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
     logger.info('start at:{}'.format(str(start)))
-    blk_path = 'E:/data/btc/blocks/1000/'
+    blk_path = 'E:/data/btc/blocks'
     blockchain = Blockchain(blk_path)
     blocks = blockchain.get_unordered_blocks()
+    # blocks = blockchain.get_ordered_blocks(blk_index_path)
+    cur_blk_num = 0
+    param = []
+    
     for block in blocks:
         # break
         blk_hash = block.hash
@@ -137,16 +95,17 @@ def test_parse_blk():
                     addr_lst = output.addresses
                     for addr in addr_lst:
                         address = str(addr.address).strip()
-                        logger.info('{}|{}|{}'.format(str(blk_hash), str(tx_hash), str(address)))
+                        #cnt = param.count([address])
+                        #if not cnt:
+                            # logger format: blk_hash|tx_hash|addr
+                        logger.info(str(address))
                 except Exception as e:
                     continue
+        cur_blk_num = cur_blk_num + 1
     end = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
     logger.info('end at:{}'.format(str(end)))
 
 
 if __name__ == '__main__':
-    # conn = MySQLConnPool('btc')
     config_logger()
     test_parse_blk()
-    
-    # conn.dispose(1)

@@ -5,7 +5,7 @@ Created on 2018年12月14日
 @author: user
 '''
 import os, sys, datetime, time
-import logging, json
+import logging,json
 from importlib import reload
 from com.scott.dev.util.mysqlpool import MySQLConnPool
 from blockchain_parser.blockchain import Blockchain, get_files, get_blocks
@@ -96,15 +96,24 @@ def saveBlock(num):
         logger.info('saveWlt successful at last! count:{}'.format(str(insert_gen_count)))
     logger.info("saveWlt end at: {} ".format(time.ctime()))
 
-
 def test_parse_blk():
     start = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
     logger.info('start at:{}'.format(str(start)))
-    blk_path = 'E:/data/btc/blocks/1000/'
-    blockchain = Blockchain(blk_path)
-    blocks = blockchain.get_unordered_blocks()
-    for block in blocks:
-        # break
+    blk_path = 'C:/Users/user/AppData/Roaming/Bitcoin/blocks/'
+    # blk_name = 'blk01000.dat'
+    blk_name = 'blk00001.dat'
+    blk_path = os.path.join(blk_path, blk_name)
+    logger.info('blkpath:{}'.format(blk_path))
+    blocks = get_blocks(blk_path)
+    # logger.info('blk size:{}'.format(str(len(blk))))
+    cur_blk_num = 0
+    for raw_block in blocks:
+        if cur_blk_num >= 1:
+            break
+        cur_blk_num = cur_blk_num + 1
+        block = Block(raw_block)
+        #json.dumps(block)
+        #logger.info(block.__dict__)
         blk_hash = block.hash
         blk_header = block.header
         blk_height = block.height
@@ -112,15 +121,19 @@ def test_parse_blk():
         blk_n_transactions = block.n_transactions
         blk_size = len(blk_hex)
         blk_transactions = block.transactions
-        # header:
+        
+        #header:
         bits = blk_header.bits
         difficulty = blk_header.difficulty
         merkle_root = blk_header.merkle_root
         nonce = blk_header.nonce
         prev_block_hash = blk_header.previous_block_hash
-        ts = blk_header.timestamp
+        ts=blk_header.timestamp
         version = blk_header.version
+        
+        logger.info('transactions_lst size:{}'.format(str(len(blk_transactions))))
         for tx in blk_transactions:
+            # logger.info(tx.__dict__)
             tx_hash = tx.hash
             tx_hex = tx.hex
             tx_inputs = tx.inputs
@@ -130,23 +143,17 @@ def test_parse_blk():
             tx_outputs = tx.outputs
             tx_size = tx.size
             tx_version = tx.version
-            enums_inputs = enumerate(tx_inputs)
-            enums_outputs = enumerate(tx_outputs)
-            for no, output in enums_outputs:
-                try:
-                    addr_lst = output.addresses
-                    for addr in addr_lst:
-                        address = str(addr.address).strip()
-                        logger.info('{}|{}|{}'.format(str(blk_hash), str(tx_hash), str(address)))
-                except Exception as e:
-                    continue
+            
+            '''
+            enums = enumerate(tx.outputs)
+            for no, output in enums:
+                logger.info('tx:{} | output_no={} | type={} | value={}'.format(str(tx.hash), str(no), str(output.type), str(output.value)))
+            '''
     end = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
     logger.info('end at:{}'.format(str(end)))
 
 
 if __name__ == '__main__':
-    # conn = MySQLConnPool('btc')
+    conn = MySQLConnPool('btc')
     config_logger()
     test_parse_blk()
-    
-    # conn.dispose(1)

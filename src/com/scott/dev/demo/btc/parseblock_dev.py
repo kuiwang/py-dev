@@ -6,20 +6,21 @@ Created on 2018年12月14日
 '''
 import os, sys, datetime, time
 import logging, json
-from importlib import reload
+#from importlib import reload
 from com.scott.dev.util.mysqlpool import MySQLConnPool
 from blockchain_parser.blockchain import Blockchain, get_files, get_blocks
 from blockchain_parser.block import Block
+
   
 # 58 character alphabet used
 
-reload(sys)  
+#reload(sys)  
 # sys.setdefaultencoding('utf8')
 
 PY_GEN_PATH = "D:/download/pygen/bitauto".replace('/', os.sep)
 
-logger = logging.getLogger('parse_block')
-LOG_FILE = 'parse_block.log'
+logger = logging.getLogger('parse_block_dev')
+LOG_FILE = 'parse_block_dev.log'
 LOG_FORMATTER = '%(asctime)s-%(levelname)s - %(filename)s - %(funcName)s - %(lineno)d - %(message)s'
 
 
@@ -52,66 +53,35 @@ def get_blk_files(path):
     return sorted(files)
 
 
-def checkRandAndPrivExists(rand_key, priv_key, addr, tbl):
-    select_sql = 'select rand_key from gen_wallet_{} t where t.rand_key= "{}" and priv_key="{}" and addr="{}"'.format(str(tbl), str(rand_key), str(priv_key), str(addr))
-    try:
-        res = conn.queryone(select_sql)
-        if res:
-            return True
-        else:
-            return False
-    except Exception as e:
-        logger.error('checkRandKeyExists exception' + e)
-        return False
-
-
-# generate walt
-def saveBlock(num):
-    logger.info("saveWlt start at: {}".format(time.ctime()))
-    param = []
-    error_param = []
-    # insert_gen_sql = 'insert into gen_wallet_(rand_key,priv_key,priv_key_type,addr) values(%s,%s,%s,%s)'
-    for i in range(1, num + 1):
-        insert_gen_sql = 'insert into gen_wallet_' + str(tbl_idx) + '(rand_key,priv_key,priv_key_type,addr,priv_key_hex,pub_key) values(%s,%s,%s,%s,%s,%s)'
-        insert_err_sql = 'insert into error_info(rand_key,priv_key,priv_key_type,addr,priv_key_hex,pub_key,tbl_idx,save_time) values(%s,%s,%s,%s,%s,%s,%s,now())'
-        try:
-            param.append([str(rand_key), str(wif_encoded_private_key), 'wif_normal', normal_addr, priv_key_hex, uncompress_pub])
-            param.append([str(rand_key), str(wif_compressed_private_key), 'wif_compressed', compress_addr, priv_key_hex, compress_pub])
-            insert_gen_count1 = conn.insertmany(insert_gen_sql, param)
-            conn.end('commit')
-            # logger.info('i={}'.format(str(i)))
-            param = []
-        except Exception as e:
-            error_param.append([str(rand_key), str(wif_encoded_private_key), 'wif_normal', normal_addr, priv_key_hex, uncompress_pub, str(tbl_idx)])
-            error_param.append([str(rand_key), str(wif_compressed_private_key), 'wif_compressed', compress_addr, priv_key_hex, compress_pub, str(tbl_idx)])
-            error_count = conn.insertmany(insert_err_sql, error_param)
-            logger.error(e)
-            logger.error('error count:{} | rand_key:{} | table:{}'.format(str(error_count), str(rand_key), str(tbl_idx)))
-            conn.end('commit')
-            error_param = []
-        
-    if len(param) > 0:
-        insert_gen_count = conn.insertmany(insert_gen_sql, param)
-        conn.end('commit')
-        logger.info('saveWlt successful at last! count:{}'.format(str(insert_gen_count)))
-    logger.info("saveWlt end at: {} ".format(time.ctime()))
-
-
 def test_parse_blk():
     start = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
     logger.info('start at:{}'.format(str(start)))
-    blk_path = 'E:/data/btc/blocks/1000/'
+    blk_path = 'E:/data/btc/blocks'
+    blk_index_path=os.path.join(blk_path,'/index')
     blockchain = Blockchain(blk_path)
     blocks = blockchain.get_unordered_blocks()
+    #blocks = blockchain.get_ordered_blocks(blk_index_path)
+    
+    cur_blk_num = 0
+    param = []
+    
     for block in blocks:
-        # break
+        # logger.info('block name:{}'.format(block.get))
+        # if cur_blk_num >= 50000:
+        #    break
+        tbl = cur_blk_num % 10000
+        
+        insert_gen_sql = 'insert into tx_output_addr_' + str(tbl) + '(addr) values(%s)'
+        
         blk_hash = block.hash
+        logger.info('cur_blk_num:{} | table:{} | block_hash:{} start'.format(str(cur_blk_num), str(tbl), str(blk_hash)))
         blk_header = block.header
         blk_height = block.height
         blk_hex = block.hex
         blk_n_transactions = block.n_transactions
         blk_size = len(blk_hex)
         blk_transactions = block.transactions
+        
         # header:
         bits = blk_header.bits
         difficulty = blk_header.difficulty
@@ -120,6 +90,7 @@ def test_parse_blk():
         prev_block_hash = blk_header.previous_block_hash
         ts = blk_header.timestamp
         version = blk_header.version
+        
         for tx in blk_transactions:
             tx_hash = tx.hash
             tx_hex = tx.hex
@@ -131,22 +102,52 @@ def test_parse_blk():
             tx_size = tx.size
             tx_version = tx.version
             enums_inputs = enumerate(tx_inputs)
+            
             enums_outputs = enumerate(tx_outputs)
             for no, output in enums_outputs:
                 try:
                     addr_lst = output.addresses
                     for addr in addr_lst:
                         address = str(addr.address).strip()
-                        logger.info('{}|{}|{}'.format(str(blk_hash), str(tx_hash), str(address)))
+                        isExist = checkOutputAddrExists(address, tbl)
+                        if not isExist :
+                            cnt = param.count([address])
+                            if not cnt:
+                                param.append([address])
+                        # else:
+                            # logger.error("addr:{} exists!".format(str(address)))
                 except Exception as e:
+                    logger.error('cur_blk_num:{} | block_hash:{} error occurs'.format(str(cur_blk_num), str(blk_hash)))
                     continue
+        len_param = len(param)
+        if (len_param > 0):
+            insert_gen_count = conn.insertmany(insert_gen_sql, param)
+            end = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+            logger.info("cur_blk_num:{} | table:{} | block_hash:{} | end at:{} | addr_count:{}".format(str(cur_blk_num), str(tbl), str(blk_hash), str(end), str(insert_gen_count)))
+            conn.end('commit')
+            param = []
+        cur_blk_num = cur_blk_num + 1
     end = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
     logger.info('end at:{}'.format(str(end)))
 
 
+def checkOutputAddrExists(addr, tbl):
+    select_sql = 'select addr  from tx_output_addr_{} t where addr="{}" '.format(str(tbl), str(addr))
+    try:
+        res = conn.queryone(select_sql)
+        if  res :
+            return True
+        else:
+            return False
+    except Exception as e:
+        logger.error('checkOutputAddrExists exception' + e)
+        return False
+
+
 if __name__ == '__main__':
-    # conn = MySQLConnPool('btc')
+    conn = MySQLConnPool('btc_new')
     config_logger()
+    
     test_parse_blk()
     
-    # conn.dispose(1)
+    conn.dispose(1)
