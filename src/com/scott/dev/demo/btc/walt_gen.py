@@ -82,7 +82,7 @@ def get_address():
     valid_private_key = False
     while not valid_private_key:
         private_key = bitcoin.random_key()
-        private_key = "0000000000000000000000000000000000000000000000000000000000000001"
+        #private_key = "0000000000000000000000000000000000000000000000000000000000000001"
         # logger.info('random_info:{} | length:{}'.format(private_key, str(len(private_key))))
         # decoded_private_key = bitcoin.decode_privkey(private_key, 'hex')
         decoded_private_key = bitcoin.decode_privkey(private_key, 'hex')
@@ -91,7 +91,7 @@ def get_address():
         
         # 将私钥转换为WIF格式
         wif_enc_priv = bitcoin.encode_privkey(decoded_private_key, 'wif')
-        # logger.info('wif_encoded_private_key:{}'.format(wif_enc_priv))
+        logger.info('wif_encoded_private_key:{}'.format(wif_enc_priv))
         # time.sleep(1 / 5)
         
         dec_enc_priv = bitcoin.encode_privkey(decoded_private_key, 'decimal')
@@ -102,31 +102,29 @@ def get_address():
         # hex_encoded_priv = bitcoin.encode_privkey(decoded_private_key, 'hex')
         hex_compress_enc_priv = bitcoin.encode_privkey(decoded_private_key, 'hex_compressed')
         wif_compress_enc_priv = bitcoin.encode_privkey(decoded_private_key, 'wif_compressed')
-        '''
         logger.info('decimal_encoded_priv_key:{}'.format(dec_enc_priv))
         logger.info('bin_encoded_priv_key:{}'.format(bin_enc_priv))
         logger.info('bin_compressed_encoded_priv_key:{}'.format(bin_compress_enc_priv))
         # logger.info('hex_encoded_priv_key:{}'.format(hex_encoded_priv))
         logger.info('hex_compressed_encoded_priv_key:{}'.format(hex_compress_enc_priv))
         logger.info('wif_compressed_encoded_priv_key:{}'.format(wif_compress_enc_priv))
-        '''
         # 添加后缀'01'以指示压缩的私钥
         compressed_priv = private_key + '01'
 
         # 从压缩私钥生成WIF格式（WIF压缩）
         wif_compressed_priv = bitcoin.encode_privkey(bitcoin.decode_privkey(compressed_priv, 'hex'), 'wif')
         wif_compressed_private_key_direct = bitcoin.encode_privkey(compressed_priv, 'wif')
-        # logger.info('wif_compressed_private_key:{}'.format(wif_compressed_priv))
-        # logger.info('wif_compressed_private_key_direct:{}'.format(wif_compressed_private_key_direct))
+        logger.info('wif_compressed_private_key:{}'.format(wif_compressed_priv))
+        logger.info('wif_compressed_private_key_direct:{}'.format(wif_compressed_private_key_direct))
         # time.sleep(1 / 5)
 
         # 将EC生成器G与私钥相乘以获得公钥点
         public_key = bitcoin.fast_multiply(bitcoin.G, decoded_private_key)
-        # logger.info('public_key:{}'.format(public_key))
+        logger.info('public_key:{}'.format(public_key))
 
         # 编码为十六进制，前缀为04
         hex_encoded_public_key = bitcoin.encode_pubkey(public_key, 'hex')  # uncompressed public key
-        # logger.info('hex_encoded_public_key:{}'.format(hex_encoded_public_key))
+        logger.info('hex_encoded_public_key:{}'.format(hex_encoded_public_key))
         
         decimal_enc_pub = bitcoin.encode_pubkey(public_key, 'decimal')
         bin_enc_public_key = bitcoin.encode_pubkey(public_key, 'bin')
@@ -134,14 +132,12 @@ def get_address():
         # hex_compress_encoded_pub = bitcoin.encode_pubkey(public_key, 'hex_compressed')
         bin_electrum_enc_pub = bitcoin.encode_pubkey(public_key, 'bin_electrum')
         hex_electrum_enc_pub = bitcoin.encode_pubkey(public_key, 'hex_electrum')
-        '''
         logger.info('decimal_encoded_public_key:{} | len:{}'.format(decimal_enc_pub, str(len(decimal_enc_pub))))
         logger.info('bin_encoded_public_key:{} | len:{}'.format(bin_enc_public_key, str(len(bin_enc_public_key))))
         logger.info('bin_compressed_encoded_public_key:{} | len:{}'.format(bin_compress_encoded_pub, str(len(bin_compress_encoded_pub))))
         # logger.info('hex_compressed_encoded_public_key:{}'.format(hex_compress_encoded_pub))
         logger.info('bin_electrum_encoded_public_key:{} | len:{}'.format(bin_electrum_enc_pub, str(len(bin_electrum_enc_pub))))
         logger.info('hex_electrum_encoded_public_key:{} | len:{}'.format(hex_electrum_enc_pub, str(len(hex_electrum_enc_pub))))
-        '''
         
         # 压缩公钥，根据y是偶数还是奇数调整前缀
         (public_key_x, public_key_y) = public_key
@@ -158,7 +154,7 @@ def get_address():
         # 压缩后的公钥  compressed_public_key
         # hex_compress_pub == hex_compress_encoded_pub 
         hex_compress_pub = compressed_prefix + bitcoin.encode(public_key_x, 16)
-        # logger.info('hex_compressed_public_key:{}'.format(hex_compress_pub))
+        logger.info('hex_compressed_public_key:{}'.format(hex_compress_pub))
 
         # 从公钥生成比特币地址
         # time.sleep(1 / 5)
@@ -174,7 +170,7 @@ def get_address():
         # 从压缩公钥生成压缩比特币地址
         # time.sleep(1 / 5)
         compress_addr = bitcoin.pubkey_to_address(hex_compress_pub.encode('utf-8'))
-        # logger.info('compress_addr:{}'.format(compress_addr))
+        logger.info('compress_addr:{}'.format(compress_addr))
         
         return wif_enc_priv, normal_addr, wif_compressed_priv, compress_addr, private_key, hex_encoded_public_key, hex_compress_pub
 

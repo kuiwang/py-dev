@@ -8,16 +8,17 @@ Created on 2018年12月14日
 import os, sys
 import logging
 import requests
-from com.scott.dev.util.mysqlpool import MySQLConnPool
+#from com.scott.dev.util.mysqlpool import MySQLConnPool
 from bs4 import BeautifulSoup
-from importlib import reload
+#from importlib import reload
 import time,random
 import brotli
 
 reload(sys) 
-# sys.setdefaultencoding('utf8')
+sys.setdefaultencoding('utf8')
 
-PY_GEN_PATH = "E:/data/priv".replace('/', os.sep)
+#PY_GEN_PATH = "E:/data/priv".replace('/', os.sep)
+PY_GEN_PATH = "/vagrant/priv".replace('/', os.sep)
 ADDR_URL_PREFIX = "https://privatekeys.pw/bitcoin/keys/{}"
 logger = logging.getLogger('get_simple_addr')
 LOG_FILE = 'get_simple_addr.log'
@@ -95,10 +96,12 @@ def config_logger():
     logger.addHandler(handler)
 
     # 控制台打印
+    '''
     console = logging.StreamHandler()
     console.setLevel(level=logging.DEBUG)  # 设置为INFO级别
     console.setFormatter(fmter)
     logger.addHandler(console)
+    '''
 
 
 def parseSimpleAddrPage(page, url):
@@ -125,9 +128,19 @@ def parseSimpleAddrPage(page, url):
 
 def saveSimpleAddrInfo():
     logger.info("saveSimpleAddrInfo start")
-    i = 20919
+    #i = 20919
+    #i = 1392
+    #i = 35485
+    #i = 46626
+    #i = 30628
+    #i = 52657
+    #i = 60370
+    #i = 65058
+    #i = 67118
+    #i = 71416
+    i = 91196
     while(i >= 1):
-        #time.sleep(random.randint(0,1))
+        time.sleep(random.randint(0,2))
         url = ADDR_URL_PREFIX.format(str(i))
         parseSimpleAddrPage(i, url)
         i = i + 1

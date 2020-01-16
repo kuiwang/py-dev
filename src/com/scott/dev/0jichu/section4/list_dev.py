@@ -1,4 +1,4 @@
-# -*- coding:utf8 -*-
+
 '''
 Created on 2018年10月19日
 
@@ -10,27 +10,31 @@ Created on 2018年10月19日
 # 列表创建格式如下：list=[ele1,ele2,ele3]
 # 列表添加：append(obj),obj可以是元组、列表、字典或任何对象
 # 列表删除：remove(),ex:remove(obj),删除元素obj，若obj不在列表中，跑出ValueError异常
-
+from importlib import reload
 import sys
 reload(sys)
-sys.setdefaultencoding('utf8')
+# sys.setdefaultencoding('utf8')
+
 
 def list_access():
-    print "list_access函数开始"
+    print ("list_access函数开始")
     lst = ["apple", "banana", "grape", "orange"]
-    print lst
-    print lst[2]
+    print (lst)
+    print (lst[2])
     lst.append("watermelon")  # 列表末尾添加元素
-    print lst
+    print (lst)
     lst.insert(1, "fruit")  # 列表中添加元素
-    print lst
+    print (lst)
     lst.remove("grape")
-    print lst
+    print (lst)
+    print("use foreach in below:")
+    for a in lst:
+        print(a)
     # lst.remove("a") #会报错
-    print lst.pop()  # 输出从列表中弹出的元素，即最后一个元素
-    print lst
+    # print lst.pop()  # 输出从列表中弹出的元素，即最后一个元素
+    # print lst
 
-
+'''
 def list_use():
     print "list_use函数开始"
     lst = ["apple", "banana", "grape", "orange"]
@@ -66,13 +70,15 @@ def list_search():
     print "orange" in lst
     print "app" in lst
 
+
 def list_sort_reverse():
     print "list_sort_reverse,list排序反转操作"
     lst = ["apple", "grape", "banana", "orange"]
-    lst.sort() #排序
-    print "sorted list:" ,lst
-    lst.reverse() #反转操作
-    print "reversed list:",lst
+    lst.sort()  # 排序
+    print "sorted list:" , lst
+    lst.reverse()  # 反转操作
+    print "reversed list:", lst
+
 
 def list_stack():
     print "list_stack,list栈操作"
@@ -80,22 +86,25 @@ def list_stack():
     print lst
     lst.append("orange")
     print lst
-    print "弹出元素：",lst.pop()
+    print "弹出元素：", lst.pop()
     print lst
+
+
 def list_queue():
     print "list_queue,list队列操作"
     lst = ["apple", "grape", "banana"]
     print lst
     lst.append("orange")
     print lst
-    print "弹出元素：",lst.pop(0)
+    print "弹出元素：", lst.pop(0)
     print lst
+'''
 
 if __name__ == '__main__':
     list_access()
-    list_use()
-    list_concat_operation()
-    list_search()
-    list_sort_reverse()
-    list_stack()
-    list_queue()
+#     list_use()
+#     list_concat_operation()
+#     list_search()
+#     list_sort_reverse()
+#     list_stack()
+#     list_queue()

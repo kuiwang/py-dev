@@ -1,31 +1,37 @@
 # -*- coding:utf-8 -*-
 '''
 Created on 2018年12月14日
-查询转化信息中手机的归属地
+获得top address,
+因使用了br编码，引入了 brotli包
 @author: user
 '''
-import os, sys, json
+import os, sys
 import logging
-import requests
-import argparse
+import requests, json
+# from com.scott.dev.util.mysqlpool import MySQLConnPool
+from bs4 import BeautifulSoup 
 from importlib import reload
-import brotli, random, time
+import socks, socket
+import random, time
+import brotli
+from hashlib import sha256
 
 reload(sys)  
 # sys.setdefaultencoding('utf8')
 
-PY_GEN_PATH = "D:/download/pygen/amap".replace('/', os.sep)
-
-logger = logging.getLogger('poi_search')
-LOG_FILE = 'poi_search.log'
-# LOG_FORMATTER = '%(asctime)s-%(levelname)s - %(filename)s - %(funcName)s - %(lineno)d - %(message)s'
+# PY_GEN_PATH = "D:/download/pygen/bitauto".replace('/', os.sep)
+PY_GEN_PATH = "E:/data/priv".replace('/', os.sep)
+PROCESS_NUM = 200
+MULTI_API = "http://51.68.204.150:4007/insight-api/addrs/{}"
+addr_file = 'E:/data/priv/prime_addr'
+logger = logging.getLogger('balance_harvest')
+LOG_FILE = 'balance_harvest.log'
 LOG_FORMATTER = '%(message)s'
-AMAP_POI_SEARCH_API = 'https://restapi.amap.com/v3/place/text?key={}&keywords={}&city=010&page={}'
-# AMAP_POI_SEARCH_API = 'https://restapi.amap.com/v3/place/text?key={}&keywords={}'
+
 s = requests.Session()
 
 
-def get_url(url, proxy=None):
+def get_url(url, refer, proxy=None):
     try:
         UA_LST = ['Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko',
               'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.95 Safari/537.36',
@@ -47,11 +53,13 @@ def get_url(url, proxy=None):
               'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0; BIDUBrowser 2.x)',
               'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.11 TaoBrowser/3.0 Safari/536.11']
         ACCEPT = "application/json"
-        ACCEPT_ENCODING = "gzip, deflate, br"
-        ACCEPT_LANGUAGE = "zh-CN,zh;q=0.9"
+        ACCEPT_ENCODING = "gzip, deflate"
+        ACCEPT_LANGUAGE = "zh-cn"
         CONNECTION = "keep-alive"
-        HOST = "restapi.amap.com"
-        header = {"HOST":HOST, "METHOD":"GET", "User-Agent":UA_LST[random.randrange(0, len(UA_LST))], 'Cache-Control':'no-cache', "Accept":ACCEPT, "Accept-Encoding":ACCEPT_ENCODING, "Accept-Language":ACCEPT_LANGUAGE, "Connection":CONNECTION}
+        HOST = "51.68.204.150:4007"
+        # HOST = "chain.api.btc.com"
+        UAGENT = 'Harvester/4621 CFNetwork/976 Darwin/18.2.0'
+        header = {"HOST":HOST, "User-Agent":UAGENT, "Accept":ACCEPT, "Accept-Encoding":ACCEPT_ENCODING, "Accept-Language":ACCEPT_LANGUAGE, "Connection":CONNECTION}
         r = s.get(url, headers=header)
         sc = r.status_code
         if sc == 200:
@@ -91,61 +99,74 @@ def config_logger():
     logger.addHandler(handler)
 
     # 控制台打印
+    '''
     console = logging.StreamHandler()
     console.setLevel(level=logging.DEBUG)  # 设置为INFO级别
     console.setFormatter(fmter)
     logger.addHandler(console)
+    '''
 
 
-def getPoiLocation(key, kw, page=1):
-    
-    real_api = AMAP_POI_SEARCH_API.format(key, kw, str(page))
-    resp_json = get_url(real_api)
-    respObj = json.loads(resp_json)
-    
-    return respObj
-
-
-def savePoiInfo(key, kw):
-    poi_info = getPoiLocation(key, kw)
-    total_num = poi_info['count']
-    
-    total_page = int(int(total_num) / 20 + 1)
-    for p in range(1, total_page + 1):
-        poiinfo = getPoiLocation(key, kw, p)
-        pois = poiinfo['pois']
-        for poi in pois:
-            name = poi['name']
-            location = poi['location']
-            logger.info('{}|{}'.format(str(name),str(location)))
-
-
-def init_parser():
-    # logger.info('start parse arguments')
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-k", "--key",
-                        type=str,
-                        dest='apikey',
-                        required=True,
-                        help="api_key"
-                        )
-    parser.add_argument("-kw", "--keyword",
-                        type=str,
-                        dest='keyword',
-                        required=True,
-                        help="kw"
-                        )
-    return parser
+def batchGetBalanceHarvest():
+    # logger.info("batchGetBalanceInfo start")
+    param = []
+    i = 0
+    with open(addr_file, 'r') as f:
+        addr = f.readline().strip()
+        while addr:
+            i = i + 1
+            # zlogger.info(str(i))
+            param.append(addr)
+            size = len(param)
+            tmp1 = i % PROCESS_NUM
+            tmp2 = i / PROCESS_NUM
+            if (tmp1 > 0 and tmp1 < PROCESS_NUM):
+                page = int (tmp2) + 1
+            else:
+                page = int (tmp2)
+            if(tmp1 == 0):
+                
+                qry = ','.join(param)
+                batch_api = MULTI_API.format(str(qry))
+                t = int(random.random() * 5)
+                time.sleep(t)
+                logger.info('{}-{}'.format(str(page), str(t)))
+                resp_json = get_url(batch_api, batch_api)
+                try:
+                    batch_info = json.loads(resp_json)
+                    for address in batch_info:
+                        a = address['addrStr']
+                        b = address['balance']
+                        if int(b) > 0:
+                            logger.info('{}|{}'.format(str(a), str(b)))
+#                         else:
+#                             logger.info('{}'.format(str(a)))
+                    param = []
+                except Exception as e:
+                    logger.error(qry)
+            addr = f.readline().strip()
+        # logger.info("sum={}".format(str(i)))
+        size = len(param)
+        if size > 0:
+            qry = ','.join(param)
+            batch_api = MULTI_API.format(str(qry))
+            resp_json = get_url(batch_api, batch_api)
+            try:
+                batch_info = json.loads(resp_json)
+                for address in batch_info:
+                    a = address['addrStr']
+                    b = address['balance']
+                    if int(b) > 0:
+                        logger.info('{}|{}'.format(str(a), str(b)))
+#                     else:
+#                         logger.info('{}'.format(str(a)))
+                param = []
+            except Exception as e:
+                logger.error(qry)
+            logger.info("size:{}".format(str(size)))
 
 
 if __name__ == '__main__':
     config_logger()
-    
-    parser = init_parser()
-    args = parser.parse_args()
-    key = args.apikey
-    kw = args.keyword
-    # kw = kw.encode('utf-8')
-    
-    savePoiInfo(key, kw)
+    batchGetBalanceHarvest()
     

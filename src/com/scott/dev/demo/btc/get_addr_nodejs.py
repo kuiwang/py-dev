@@ -1,31 +1,35 @@
 # -*- coding:utf-8 -*-
 '''
 Created on 2018年12月14日
-查询转化信息中手机的归属地
+获得top address,
+因使用了br编码，引入了 brotli包
 @author: user
 '''
-import os, sys, json
+import os, sys
 import logging
 import requests
-import argparse
+# from com.scott.dev.util.mysqlpool import MySQLConnPool
+from bs4 import BeautifulSoup
 from importlib import reload
-import brotli, random, time
+import time, random
+import brotli
 
-reload(sys)  
+reload(sys) 
 # sys.setdefaultencoding('utf8')
 
-PY_GEN_PATH = "D:/download/pygen/amap".replace('/', os.sep)
-
-logger = logging.getLogger('poi_search')
-LOG_FILE = 'poi_search.log'
+# PY_GEN_PATH = "E:/data/priv".replace('/', os.sep)
+PY_GEN_PATH = "E:/data/priv".replace('/', os.sep)
+ADDR_URL_PREFIX = "http://localhost:9000/#!/page/{}"
+logger = logging.getLogger('get_addr_nodejs')
+LOG_FILE = 'get_addr_nodejs.log'
+# LOG_FORMATTER = '%(asctime)s - %(filename)s - %(funcName)s - %(lineno)d - %(threadName)s - %(process)d - %(name)s - %(levelname)s - %(message)s'
 # LOG_FORMATTER = '%(asctime)s-%(levelname)s - %(filename)s - %(funcName)s - %(lineno)d - %(message)s'
 LOG_FORMATTER = '%(message)s'
-AMAP_POI_SEARCH_API = 'https://restapi.amap.com/v3/place/text?key={}&keywords={}&city=010&page={}'
-# AMAP_POI_SEARCH_API = 'https://restapi.amap.com/v3/place/text?key={}&keywords={}'
+
 s = requests.Session()
 
 
-def get_url(url, proxy=None):
+def get_url(url, refer):
     try:
         UA_LST = ['Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko',
               'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.95 Safari/537.36',
@@ -46,12 +50,12 @@ def get_url(url, proxy=None):
               'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.92 Safari/537.1 LBBROWSER',
               'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0; BIDUBrowser 2.x)',
               'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.11 TaoBrowser/3.0 Safari/536.11']
-        ACCEPT = "application/json"
+        ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
         ACCEPT_ENCODING = "gzip, deflate, br"
         ACCEPT_LANGUAGE = "zh-CN,zh;q=0.9"
         CONNECTION = "keep-alive"
-        HOST = "restapi.amap.com"
-        header = {"HOST":HOST, "METHOD":"GET", "User-Agent":UA_LST[random.randrange(0, len(UA_LST))], 'Cache-Control':'no-cache', "Accept":ACCEPT, "Accept-Encoding":ACCEPT_ENCODING, "Accept-Language":ACCEPT_LANGUAGE, "Connection":CONNECTION}
+        HOST = "privatekeys.pw"
+        header = {"HOST":HOST, "METHOD":"GET", "User-Agent":UA_LST[random.randrange(0, len(UA_LST))], 'Cache-Control':'no-cache', 'Referer':refer, "Accept":ACCEPT, "Accept-Encoding":ACCEPT_ENCODING, "Accept-Language":ACCEPT_LANGUAGE, "Connection":CONNECTION}
         r = s.get(url, headers=header)
         sc = r.status_code
         if sc == 200:
@@ -73,6 +77,7 @@ def get_url(url, proxy=None):
             # logger.info('r.text:\n' + r.text)
             return r.text
         else:
+            logger.error('response code:{}'.format(str(sc)))
             return None
     except Exception as e:
         logger.error(e)
@@ -91,61 +96,45 @@ def config_logger():
     logger.addHandler(handler)
 
     # 控制台打印
+    '''
     console = logging.StreamHandler()
     console.setLevel(level=logging.DEBUG)  # 设置为INFO级别
     console.setFormatter(fmter)
     logger.addHandler(console)
+    '''
 
 
-def getPoiLocation(key, kw, page=1):
+def parseSimpleAddrPage(page, url):
+    html = get_url(url, url)
+    if html is None:
+        logger.error('response is null')
+        return
+    soup = BeautifulSoup(html, "lxml")
+    body = soup.find("body")
+    logger.info(body)
+    container = body.find('div', attrs={"ng-controller":'HeaderCtrl'}).find("div", attrs={"class":"container"})
     
-    real_api = AMAP_POI_SEARCH_API.format(key, kw, str(page))
-    resp_json = get_url(real_api)
-    respObj = json.loads(resp_json)
-    
-    return respObj
+    tbl = container.find("div", attrs={"class":"ng-scope"}).find("div", attrs={"class":"ng-scope"}).find("table")
+    tbody = tbl.find("tbody")
+    tr_lst = tbody.findAll("tr")
+    for tr in tr_lst:
+        td_lst = tr.findAll("td")
+        priv_key_hex = td_lst[0].get_text().strip()
+        compress_addr = td_lst[1].get_text().strip()
+        uncompress_addr = td_lst[2].get_text().strip()
+        # log format: page_num|priv_key_hex|compressed_addr_prefix1|uncompress_addr_prefix1
+        logger.info("{}|{}|{}|{}|".format(str(page), str(priv_key_hex), str(compress_addr), str(uncompress_addr)))
 
 
-def savePoiInfo(key, kw):
-    poi_info = getPoiLocation(key, kw)
-    total_num = poi_info['count']
-    
-    total_page = int(int(total_num) / 20 + 1)
-    for p in range(1, total_page + 1):
-        poiinfo = getPoiLocation(key, kw, p)
-        pois = poiinfo['pois']
-        for poi in pois:
-            name = poi['name']
-            location = poi['location']
-            logger.info('{}|{}'.format(str(name),str(location)))
-
-
-def init_parser():
-    # logger.info('start parse arguments')
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-k", "--key",
-                        type=str,
-                        dest='apikey',
-                        required=True,
-                        help="api_key"
-                        )
-    parser.add_argument("-kw", "--keyword",
-                        type=str,
-                        dest='keyword',
-                        required=True,
-                        help="kw"
-                        )
-    return parser
+def saveSimpleAddrInfo():
+    i = 1
+    while(i >= 1):
+        url = ADDR_URL_PREFIX.format(str(i))
+        parseSimpleAddrPage(i, url)
+        i = i + 1
 
 
 if __name__ == '__main__':
     config_logger()
-    
-    parser = init_parser()
-    args = parser.parse_args()
-    key = args.apikey
-    kw = args.keyword
-    # kw = kw.encode('utf-8')
-    
-    savePoiInfo(key, kw)
-    
+
+    saveSimpleAddrInfo()

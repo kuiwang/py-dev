@@ -8,7 +8,7 @@ Created on 2018年12月14日
 import os, sys, math
 import logging
 import requests
-from com.scott.dev.util.mysqlpool import MySQLConnPool
+#from com.scott.dev.util.mysqlpool import MySQLConnPool
 from bs4 import BeautifulSoup
 from importlib import reload
 import time, random

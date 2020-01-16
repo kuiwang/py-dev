@@ -8,16 +8,17 @@ Created on 2018年12月14日
 import os, sys
 import logging
 import requests
-from com.scott.dev.util.mysqlpool import MySQLConnPool
+#from com.scott.dev.util.mysqlpool import MySQLConnPool
 from bs4 import BeautifulSoup
-from importlib import reload
+#from importlib import reload
 import time,random
 import brotli
 
 reload(sys) 
-# sys.setdefaultencoding('utf8')
+sys.setdefaultencoding('utf8')
 
-PY_GEN_PATH = "E:/data/priv".replace('/', os.sep)
+# PY_GEN_PATH = "E:/data/priv".replace('/', os.sep)
+PY_GEN_PATH = "/vagrant/priv".replace('/', os.sep)
 ADDR_URL_PREFIX = "https://privatekeys.pw/bitcoin-segwit-p2sh/keys/{}"
 logger = logging.getLogger('get_3addr')
 LOG_FILE = 'get_3addr.log'
@@ -95,10 +96,12 @@ def config_logger():
     logger.addHandler(handler)
 
     # 控制台打印
+    '''
     console = logging.StreamHandler()
     console.setLevel(level=logging.DEBUG)  # 设置为INFO级别
     console.setFormatter(fmter)
     logger.addHandler(console)
+    '''
 
 
 def parse3AddrPage(page, url):
@@ -125,9 +128,24 @@ def parse3AddrPage(page, url):
 
 def save3AddrInfo():
     logger.info("save3AddrInfo start")
-    i = 18611
+    #i = 18611
+    #i = 1
+    #i = 952
+    #i = 28963
+    #i = 33851
+    #i = 39449
+    #i = 44600
+    #i = 49860
+    #i = 57518
+    #i = 62631
+    #i = 63068
+    #i = 63977
+    #i = 66797
+    #i = 77922
+    #i = 84665
+    i = 87616
     while(i >= 1):
-        #time.sleep(random.randint(0,5))
+        time.sleep(random.randint(0,2))
         url = ADDR_URL_PREFIX.format(str(i))
         parse3AddrPage(i, url)
         i = i + 1

@@ -7,16 +7,17 @@ https://bitkeys.work/?page=0
 import os, sys
 import logging
 import requests
-from com.scott.dev.util.mysqlpool import MySQLConnPool
+#from com.scott.dev.util.mysqlpool import MySQLConnPool
 from bs4 import BeautifulSoup
-from importlib import reload
+#from importlib import reload
 import time,random
 import brotli
 
 reload(sys) 
-# sys.setdefaultencoding('utf8')
+sys.setdefaultencoding('utf8')
 
-PY_GEN_PATH = "E:/data/priv".replace('/', os.sep)
+#PY_GEN_PATH = "E:/data/priv".replace('/', os.sep)
+PY_GEN_PATH = "/vagrant/priv".replace('/', os.sep)
 ADDR_URL_PREFIX = "https://bitkeys.work/?page={}"
 logger = logging.getLogger('get_bitkeys')
 LOG_FILE = 'get_bitkeys.log'
@@ -94,10 +95,12 @@ def config_logger():
     logger.addHandler(handler)
 
     # 控制台打印
+    '''
     console = logging.StreamHandler()
     console.setLevel(level=logging.DEBUG)  # 设置为INFO级别
     console.setFormatter(fmter)
     logger.addHandler(console)
+    '''
 
 
 def parseBitkeysworkPage(page, url):
@@ -121,9 +124,9 @@ def parseBitkeysworkPage(page, url):
 
 
 def saveBitkeysworkInfo():
-    logger.info("saveBitkeysworkInfo start")
-    i = 4393
-    for i in range(26751, 100001):
+    #logger.info("saveBitkeysworkInfo start")
+    i = 0
+    for i in range(60320, 100001):
         time.sleep(random.randint(1,3))
         url = ADDR_URL_PREFIX.format(str(i))
         parseBitkeysworkPage(i, url)
